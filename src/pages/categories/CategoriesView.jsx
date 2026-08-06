@@ -152,7 +152,7 @@ export default function CategoriesView() {
 
   return (
     <Layout>
-      <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-6">
+      <div className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
         <div className="text-center sm:text-left">
           <PageHeading
             title={isEditing ? "Editar categoría" : "Registrar nueva categoría"}

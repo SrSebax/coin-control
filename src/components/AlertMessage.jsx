@@ -3,10 +3,10 @@ export default function AlertMessage({ open, message, severity = "info", onClose
   if (!open) return null;
 
   const styles = {
-    success: "bg-green-100 border-green-400 text-green-800",
-    error: "bg-red-100 border-red-400 text-red-800",
-    info: "bg-blue-100 border-blue-400 text-blue-800",
-    warning: "bg-yellow-100 border-yellow-400 text-yellow-800",
+    success: "bg-green-100 dark:bg-green-950/60 border-green-400 dark:border-green-700 text-green-800 dark:text-green-200",
+    error: "bg-red-100 dark:bg-red-950/60 border-red-400 dark:border-red-700 text-red-800 dark:text-red-200",
+    info: "bg-blue-100 dark:bg-blue-950/60 border-blue-400 dark:border-blue-700 text-blue-800 dark:text-blue-200",
+    warning: "bg-yellow-100 dark:bg-yellow-950/60 border-yellow-400 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200",
   };
 
   return (

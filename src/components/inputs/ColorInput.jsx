@@ -24,12 +24,12 @@ export default function ColorInput({ value, onChange, label = "Color", name = "c
 
   return (
     <div className="w-full">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
+      <label htmlFor={name} className="block text-sm font-medium text-text-secondary mb-2">
         {label}
       </label>
       
       {value && (
-        <div className="mb-3 py-3 px-2 bg-gray-50 border border-gray-200 rounded-md flex items-center">
+        <div className="mb-3 py-3 px-2 bg-surface-alt border border-divider rounded-md flex items-center">
           <div 
             className="w-6 h-6 rounded-full shadow-sm mr-2" 
             style={{ backgroundColor: value }}
@@ -40,15 +40,15 @@ export default function ColorInput({ value, onChange, label = "Color", name = "c
         </div>
       )}
       
-      <div className="w-full p-3 border border-gray-300 rounded-md bg-white">
+      <div className="w-full p-3 border border-divider rounded-md bg-surface">
         <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 pb-2 pl-2 pt-2">
           {colors.map((color) => (
             <button
               key={color.hex}
               type="button"
               onClick={() => handleColorSelect(color.hex)}
-              className={`cursor-pointer p-3 rounded-md hover:bg-gray-50 transition-all duration-200 flex items-center ${
-                color.hex === value ? "bg-[var(--color-primary-light)] ring-2 ring-[var(--color-primary)]" : "border border-gray-200"
+              className={`cursor-pointer p-3 rounded-md hover:bg-surface-alt transition-all duration-200 flex items-center ${
+                color.hex === value ? "bg-[var(--color-primary-light)] ring-2 ring-[var(--color-primary)]" : "border border-divider"
               }`}
             >
               <div 
@@ -57,7 +57,7 @@ export default function ColorInput({ value, onChange, label = "Color", name = "c
               ></div>
               <div className="flex flex-col items-start">
                 <span className="text-sm font-medium">{color.name}</span>
-                <span className="text-xs text-gray-500">{color.hex}</span>
+                <span className="text-xs text-text-tertiary">{color.hex}</span>
               </div>
             </button>
           ))}

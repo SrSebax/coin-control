@@ -1,11 +1,14 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-primary: #48a99e;
+  --color-primary: #0f9c8f;
   --color-primary-light: #a6ded8;
   --color-primary-dark: #2f7d74;
+  --color-primary-soft: #e6f6f4;
 
-  --color-primary-hover: #3f8d84;
+  --color-primary-hover: #0c8377;
 
   --color-background: #f4f6f8;
   --color-surface: #ffffff;
@@ -15,6 +18,7 @@
   --color-navbar: #ffffff;
 
   --color-text: #1e293b;
+  --color-text-primary: #1e293b;
   --color-text-secondary: #475569;
   --color-text-tertiary: #64748b;
   --color-text-muted: #94a3b8;
@@ -22,8 +26,8 @@
 
   --color-hover: #e2e8f0;
   --color-active: #cbd5e1;
-  --color-divider: #d1d5db;
-  --color-shadow: rgba(0, 0, 0, 0.05);
+  --color-divider: #e2e8f0;
+  --color-shadow: rgba(15, 23, 42, 0.06);
 
   --color-danger: #ef4444;
   --color-danger-light: #fecaca;
@@ -51,6 +55,73 @@
   --color-button-income-hover: #059669;
 
   --color-disabled: #d1d5db;
+
+  --color-chart-1: #0f9c8f;
+  --color-chart-2: #f59e0b;
+  --color-chart-3: #6366f1;
+  --color-chart-4: #ec4899;
+  --color-chart-5: #3b82f6;
+  --color-chart-6: #84cc16;
+  --color-chart-7: #f43f5e;
+  --color-chart-8: #94a3b8;
+}
+
+/* Modo oscuro: se sobreescriben las mismas variables, así todas las
+   utilidades (bg-surface, text-text-secondary, etc.) heredan el valor
+   correcto sin necesitar el prefijo dark: en cada componente. */
+:root.dark {
+  --color-primary: #2dd4bf;
+  --color-primary-light: #5eead4;
+  --color-primary-dark: #14b8a6;
+  --color-primary-soft: #0f2e2b;
+
+  --color-primary-hover: #5eead4;
+
+  --color-background: #0b1220;
+  --color-surface: #151f32;
+  --color-surface-alt: #1b2740;
+  --color-sidebar: #101827;
+  --color-sidebar-border: #253552;
+  --color-navbar: #101827;
+
+  --color-text: #f1f5f9;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-text-tertiary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-text-button: #0b1220;
+
+  --color-hover: #1f2c47;
+  --color-active: #2c3c5c;
+  --color-divider: #253552;
+  --color-shadow: rgba(0, 0, 0, 0.45);
+
+  --color-danger-light: #7f1d1d;
+  --color-success-light: #064e3b;
+  --color-warning-light: #78350f;
+
+  --color-icon: #94a3b8;
+  --color-icon-active: #e2e8f0;
+
+  --color-dialog-background: #151f32;
+
+  --color-expense: #3a1414;
+  --color-expense-hover: #4c1a1a;
+  --color-expense-text: #fca5a5;
+
+  --color-income: #0d2818;
+  --color-income-hover: #12351f;
+  --color-income-text: #86efac;
+
+  --color-disabled: #334155;
+
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 @keyframes loadingBarGlow {

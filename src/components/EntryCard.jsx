@@ -36,7 +36,7 @@ export default function EntryCard({
     : "bg-gradient-to-r from-[var(--color-income)] to-[var(--color-income-hover)]";
 
   return (
-    <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden transform hover:-translate-y-1">
+    <div className="bg-surface rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden transform hover:-translate-y-1">
       {/* Barra superior de color */}
       <div className={`h-2 ${bgGradient}`}></div>
 
@@ -52,7 +52,7 @@ export default function EntryCard({
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-800 text-lg">
+              <h3 className="font-semibold text-text text-lg">
                 {item.name}
               </h3>
               {item.titleInfo && <div className="mt-0.5">{item.titleInfo}</div>}
@@ -72,7 +72,7 @@ export default function EntryCard({
               <div className="relative group">
                 <button
                   onClick={() => onEdit(item.id)}
-                  className="cursor-pointer p-2 text-white rounded-full transition-all hover:opacity-90 hover:shadow-md"
+                  className="cursor-pointer p-2 text-white rounded-full transition-all hover:opacity-85 hover:shadow-md"
                   style={{ backgroundColor: accentColor }}
                   aria-label="Editar"
                 >
@@ -87,7 +87,7 @@ export default function EntryCard({
               <div className="relative group">
                 <button
                   onClick={() => onDelete(item)}
-                  className="cursor-pointer p-2 bg-gray-200 text-gray-700 rounded-full transition-all hover:bg-gray-300"
+                  className="cursor-pointer p-2 bg-active text-text-secondary rounded-full transition-all hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950/50 dark:hover:text-red-400"
                   aria-label="Eliminar"
                 >
                   <Trash2 size={16} />
@@ -103,7 +103,7 @@ export default function EntryCard({
         {/* Renderizar contenido adicional si existe */}
         {renderContent && (
           <div
-            className="mt-4 ml-14 p-3 bg-gray-50 rounded-lg border-l-2"
+            className="mt-4 ml-14 p-3 bg-surface-alt rounded-lg border-l-2"
             style={{ borderColor: accentColor }}
           >
             {renderContent(item)}

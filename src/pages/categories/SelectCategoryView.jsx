@@ -67,7 +67,7 @@ export default function SelectCategoryView() {
   
   return (
     <Layout>
-      <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-6">
+      <div className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
         <div className="text-center sm:text-left">
           <PageHeading title="Seleccionar categoría" />
           <TabsSwitcher activeTab={activeTab} setActiveTab={handleTabChange} />

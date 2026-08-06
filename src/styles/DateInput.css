@@ -102,3 +102,36 @@
 .date-picker-popper {
   z-index: 40 !important;
 }
+
+/* Modo oscuro */
+.dark .react-datepicker {
+  border-color: var(--color-divider) !important;
+  background-color: var(--color-surface) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+.dark .react-datepicker__header {
+  background-color: var(--color-surface-alt) !important;
+  border-bottom-color: var(--color-divider) !important;
+}
+
+.dark .react-datepicker__current-month,
+.dark .react-datepicker__day {
+  color: var(--color-text) !important;
+}
+
+.dark .react-datepicker__day-name {
+  color: var(--color-text-tertiary) !important;
+}
+
+.dark .react-datepicker__day:hover {
+  background-color: var(--color-hover) !important;
+}
+
+.dark .react-datepicker__day--outside-month {
+  color: var(--color-text-muted) !important;
+}
+
+.dark .react-datepicker__today-button {
+  border-top-color: var(--color-divider) !important;
+}

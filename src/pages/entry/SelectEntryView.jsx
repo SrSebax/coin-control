@@ -8,6 +8,7 @@ import ConfirmModal from "../../components/ConfirmModal";
 import EmptyState from "../../components/EmptyState";
 import EntryCard from "../../components/EntryCard";
 import { useTransactions } from "../../hooks/useLocalStorage";
+import { parseLocalDate } from "../../utils/date";
 
 export default function SelectEntryView() {
   const navigate = useNavigate();
@@ -69,7 +70,7 @@ export default function SelectEntryView() {
   const formatDate = (dateString) => {
     if (!dateString) return "";
     
-    const date = new Date(dateString);
+    const date = parseLocalDate(dateString);
     return date.toLocaleDateString('es-ES', {
       day: 'numeric',
       month: 'short',
@@ -85,7 +86,7 @@ export default function SelectEntryView() {
     return (
       <>
         {entry.note && (
-          <p className="text-sm text-gray-600 italic">{entry.note}</p>
+          <p className="text-sm text-text-secondary italic">{entry.note}</p>
         )}
       </>
     );
@@ -97,9 +98,9 @@ export default function SelectEntryView() {
       ...entry,
       // Añadir información adicional para mostrar en el título
       titleInfo: (
-        <p className="text-sm text-gray-500 flex items-center gap-1">
+        <p className="text-sm text-text-tertiary flex items-center gap-1">
           <span className="font-medium">{formatDate(entry.date)}</span>
-          <span className="text-gray-400">•</span>
+          <span className="text-text-muted">•</span>
           <span>{entry.category}</span>
         </p>
       ),
@@ -116,7 +117,7 @@ export default function SelectEntryView() {
   
   return (
     <Layout>
-      <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-6">
+      <div className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
         <div className="text-center sm:text-left">
           <PageHeading title="Seleccionar movimiento" />
           <TabsSwitcher activeTab={activeTab} setActiveTab={handleTabChange} />

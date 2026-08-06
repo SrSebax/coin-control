@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocalStorage } from "./useLocalStorage";
+import { parseLocalDate } from "../utils/date";
 
 export function usePockets() {
   const [pockets, setPockets] = useLocalStorage("pockets", []);
@@ -77,7 +78,7 @@ export function usePockets() {
   const calculateNextSavingDate = (startDateStr, frequency) => {
     if (!startDateStr || !frequency) return null;
     
-    const startDate = new Date(startDateStr);
+    const startDate = parseLocalDate(startDateStr);
     let nextDate = new Date(startDate);
     
     switch(frequency.toLowerCase()) {

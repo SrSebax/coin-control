@@ -1,279 +1,183 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { X, Edit, PlusCircle, ChevronDown, ChevronRight } from "lucide-react";
-import logoFull from "../assets/coin-control-light.svg";
-import logoCollapsed from "../assets/pig-coin-control.svg";
-import nordwareFullLogo from "../assets/nørdware/nordware-full-dark.svg";
-import nordwareSmallLogo from "../assets/nørdware/nordware-logo-dark.svg";
+import {
+  X,
+  Edit,
+  ChevronDown,
+  ChevronRight,
+  ChevronsRight,
+  PiggyBank,
+  Plus,
+} from "lucide-react";
 import { itemsRoutes } from "../routes/itemsRoutes";
+import { useCurrentUser } from "../hooks/useCurrentUser";
+import logoIcon from "../assets/favicon.svg";
+import logoFull from "../assets/coin-control-dark.svg";
+
+const EXPANDABLE = {
+  "/categories": { key: "categories", editPath: "/select-category", editLabel: "Editar categoría", matchEdit: "/edit-category/" },
+  "/pockets": { key: "pockets", editPath: "/select-pocket", editLabel: "Editar bolsillo", matchEdit: "/edit-pocket/" },
+  "/new-entry": { key: "entries", editPath: "/select-entry", editLabel: "Editar movimiento", matchEdit: "/edit-entry/" },
+};
+
+function getInitials(name) {
+  if (!name) return "U";
+  return name.split(" ").map((w) => w.charAt(0)).join("").toUpperCase().substring(0, 2);
+}
 
 export default function Sidebar({ collapsed, mobileOpen, setMobileOpen }) {
   const { pathname } = useLocation();
+  const { user, displayName } = useCurrentUser();
   const [expandedItems, setExpandedItems] = useState({
     categories: pathname.includes("/categories") || pathname.includes("/select-category") || pathname.includes("/edit-category"),
     pockets: pathname.includes("/pockets") || pathname.includes("/select-pocket") || pathname.includes("/edit-pocket"),
-    entries: pathname.includes("/new-entry") || pathname.includes("/select-entry") || pathname.includes("/edit-entry")
+    entries: pathname.includes("/new-entry") || pathname.includes("/select-entry") || pathname.includes("/edit-entry"),
   });
 
   const toggleExpanded = (item) => {
     if (collapsed) return;
-    // Solo alternar la sección actual sin cerrar las demás
-    setExpandedItems(prev => ({
-      ...prev,
-      [item]: !prev[item]
-    }));
+    setExpandedItems((prev) => ({ ...prev, [item]: !prev[item] }));
   };
 
-  const baseClasses =
-    "fixed inset-y-0 left-0 z-40 bg-[var(--color-sidebar)]/95 backdrop-blur-md border-r border-[var(--color-sidebar-border)] transition-all duration-300 ease-in-out h-screen flex flex-col shadow-lg";
   const widthClass = collapsed ? "w-16" : "w-64";
   const translateClass = mobileOpen ? "translate-x-0" : "-translate-x-full";
 
-  const logoSrc = collapsed ? logoCollapsed : logoFull;
-  const logoSizeClasses = "h-12 transition-all duration-300";
+  const activeClasses = "bg-gradient-to-r from-emerald-600/50 to-emerald-600/10 text-white";
+  const inactiveClasses = "text-white/65 hover:bg-white/5 hover:text-white";
 
   return (
-    <>
-      <aside
-        className={`${baseClasses} ${widthClass} ${translateClass} md:translate-x-0 md:static`}
-      >
-        {/* Cabecera fija */}
-        <div className="flex items-center justify-between px-4 py-4 shrink-0">
-          <Link
-            to="/"
-            className="flex items-center justify-center transition-transform duration-300 hover:scale-105"
-            aria-label="Inicio"
-          >
-            <img
-              src={logoSrc}
-              alt="CoinControl"
-              className={`${logoSizeClasses} ${collapsed ? "w-12" : "w-auto"}`}
-            />
-          </Link>
-          <button
-            className="md:hidden text-[var(--color-icon)] transition hover:scale-110"
-            onClick={() => setMobileOpen(false)}
-            aria-label="Cerrar menú"
-          >
-            <X size={22} />
-          </button>
-        </div>
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 bg-gradient-to-b from-[#0b1a15] to-[#081310] border-r border-white/5 transition-all duration-300 ease-in-out h-screen flex flex-col shadow-lg ${widthClass} ${translateClass} md:translate-x-0 md:static`}
+    >
+      {/* Cabecera */}
+      <div className="flex items-center justify-between px-4 py-4 shrink-0">
+        <Link to="/home" className="flex items-center gap-2.5 min-w-0" aria-label="Inicio">
+          {collapsed ? (
+            <img src={logoIcon} alt="CoinControl" className="w-11 h-11 rounded-full shrink-0" />
+          ) : (
+            <img src={logoFull} alt="CoinControl" className="h-11 w-auto" />
+          )}
+        </Link>
+        <button
+          className="md:hidden text-white/60 hover:text-white transition"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Cerrar menú"
+        >
+          <X size={22} />
+        </button>
+      </div>
 
-        {/* Contenedor central con scroll */}
-        <div className="flex-1 flex flex-col min-h-0">
-          {/* Navegación con scroll */}
-          <nav className="flex flex-col gap-1 px-2 flex-1 overflow-y-auto">
-            {itemsRoutes.map(({ path, label, icon }) => {
-              // Verificar si es la ruta de categorías para agregar la opción de crear
-              if (path === "/categories") {
-                return (
-                  <div key={path} className="flex flex-col">
-                    <div className={`flex items-center rounded-md ${pathname === path ? "bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-md scale-[1.02]" : "hover:bg-[var(--color-hover)] hover:shadow-sm"} transition-all duration-200 ease-in-out`}>
-                      <Link
-                        to={path}
-                        className="flex items-center gap-3 px-3 py-2 text-sm font-medium flex-grow"
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        {icon}
-                        {!collapsed && (
-                          <span className="transition-opacity duration-200">
-                            {label}
-                          </span>
-                        )}
-                      </Link>
-                      {!collapsed && (
-                        <button
-                          onClick={() => toggleExpanded("categories")}
-                          className="pr-3 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
-                          aria-label={expandedItems.categories ? "Contraer categorías" : "Expandir categorías"}
-                        >
-                          {expandedItems.categories ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                        </button>
-                      )}
-                    </div>
-                    {!collapsed && expandedItems.categories && (
-                      <Link
-                        to="/select-category"
-                        className={`
-                        flex items-center gap-3 px-3 py-2 ml-4 rounded-md text-sm font-medium transition-all duration-200 ease-in-out
-                        ${
-                          pathname === "/select-category" ||
-                          pathname.startsWith("/edit-category/")
-                            ? "bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-md scale-[1.02]"
-                            : "text-[var(--color-text-secondary)] hover:bg-[var(--color-hover)] hover:scale-[1.02] hover:shadow-sm"
-                        }
-                      `}
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        <Edit size={18} />
-                        <span className="transition-opacity duration-200">
-                          Editar Categoría
-                        </span>
-                      </Link>
-                    )}
-                  </div>
-                );
-              }
+      {/* Navegación */}
+      <nav className="flex flex-col gap-1 px-2 flex-1 overflow-y-auto">
+        {itemsRoutes.map(({ path, label, icon }) => {
+          const expandable = EXPANDABLE[path];
 
-              // Ruta de bolsillos con opción de editar
-              if (path === "/pockets") {
-                return (
-                  <div key={path} className="flex flex-col">
-                    <div className={`flex items-center rounded-md ${pathname === path ? "bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-md scale-[1.02]" : "hover:bg-[var(--color-hover)] hover:shadow-sm"} transition-all duration-200 ease-in-out`}>
-                      <Link
-                        to={path}
-                        className="flex items-center gap-3 px-3 py-2 text-sm font-medium flex-grow"
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        {icon}
-                        {!collapsed && (
-                          <span className="transition-opacity duration-200">
-                            {label}
-                          </span>
-                        )}
-                      </Link>
-                      {!collapsed && (
-                        <button
-                          onClick={() => toggleExpanded("pockets")}
-                          className="pr-3 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
-                          aria-label={expandedItems.pockets ? "Contraer bolsillos" : "Expandir bolsillos"}
-                        >
-                          {expandedItems.pockets ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                        </button>
-                      )}
-                    </div>
-                    {!collapsed && expandedItems.pockets && (
-                      <Link
-                        to="/select-pocket"
-                        className={`
-                        flex items-center gap-3 px-3 py-2 ml-4 rounded-md text-sm font-medium transition-all duration-200 ease-in-out
-                        ${
-                          pathname === "/select-pocket" ||
-                          pathname.startsWith("/edit-pocket/")
-                            ? "bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-md scale-[1.02]"
-                            : "text-[var(--color-text-secondary)] hover:bg-[var(--color-hover)] hover:scale-[1.02] hover:shadow-sm"
-                        }
-                      `}
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        <Edit size={18} />
-                        <span className="transition-opacity duration-200">
-                          Editar Bolsillo
-                        </span>
-                      </Link>
-                    )}
-                  </div>
-                );
-              }
+          if (expandable) {
+            const isExpanded = expandedItems[expandable.key];
+            const isEditActive =
+              pathname === expandable.editPath || pathname.startsWith(expandable.matchEdit);
 
-              // Verificar si es la ruta de movimientos para agregar la opción de crear
-              if (path === "/new-entry") {
-                return (
-                  <div key={path} className="flex flex-col">
-                    <div className={`flex items-center rounded-md ${pathname === path ? "bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-md scale-[1.02]" : "hover:bg-[var(--color-hover)] hover:shadow-sm"} transition-all duration-200 ease-in-out`}>
-                      <Link
-                        to={path}
-                        className="flex items-center gap-3 px-3 py-2 text-sm font-medium flex-grow"
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        {icon}
-                        {!collapsed && (
-                          <span className="transition-opacity duration-200">
-                            {label}
-                          </span>
-                        )}
-                      </Link>
-                      {!collapsed && (
-                        <button
-                          onClick={() => toggleExpanded("entries")}
-                          className="pr-3 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
-                          aria-label={expandedItems.entries ? "Contraer movimientos" : "Expandir movimientos"}
-                        >
-                          {expandedItems.entries ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                        </button>
-                      )}
-                    </div>
-                    {!collapsed && expandedItems.entries && (
-                      <Link
-                        to="/select-entry"
-                        className={`
-                        flex items-center gap-3 px-3 py-2 ml-4 rounded-md text-sm font-medium transition-all duration-200 ease-in-out
-                        ${
-                          pathname === "/select-entry" ||
-                          pathname.startsWith("/edit-entry/")
-                            ? "bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-md scale-[1.02]"
-                            : "text-[var(--color-text-secondary)] hover:bg-[var(--color-hover)] hover:scale-[1.02] hover:shadow-sm"
-                        }
-                      `}
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        <Edit size={18} />
-                        <span className="transition-opacity duration-200">
-                          Editar Movimiento
-                        </span>
-                      </Link>
-                    )}
-                  </div>
-                );
-              }
-
-              // Para las demás rutas, mantener el comportamiento original
-              return (
-                <Link
-                  key={path}
-                  to={path}
-                  className={`
-                  flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ease-in-out
-                  ${
-                    pathname === path
-                      ? "bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-md scale-[1.02]"
-                      : "text-[var(--color-text-secondary)] hover:bg-[var(--color-hover)] hover:scale-[1.02] hover:shadow-sm"
-                  }
-                `}
-                  onClick={() => setMobileOpen(false)}
+            return (
+              <div key={path} className="flex flex-col">
+                <div
+                  className={`flex items-center rounded-lg transition-all duration-200 ${
+                    pathname === path ? activeClasses : inactiveClasses
+                  }`}
                 >
-                  {icon}
+                  <Link
+                    to={path}
+                    className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium flex-grow"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {icon}
+                    {!collapsed && <span>{label}</span>}
+                  </Link>
                   {!collapsed && (
-                    <span className="transition-opacity duration-200">
-                      {label}
-                    </span>
+                    <button
+                      onClick={() => toggleExpanded(expandable.key)}
+                      className="pr-3 text-white/40 hover:text-white/80 transition-colors cursor-pointer"
+                      aria-label={isExpanded ? `Contraer ${label}` : `Expandir ${label}`}
+                    >
+                      {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                    </button>
                   )}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* Footer fijo */}
-        <div className="shrink-0">
-          {/* Logo de Nørdware */}
-          <div className="px-4 py-4 border-t border-[var(--color-sidebar-border)] flex flex-col items-center space-y-2">
-            {collapsed ? (
-              <div className="relative group flex items-center justify-center">
-                <img
-                  src={nordwareSmallLogo}
-                  alt="Nørdware"
-                  className="w-8 h-8 opacity-90 hover:opacity-100 transition-opacity duration-200 drop-shadow-sm"
-                />
-                <span className="absolute left-full top-1/2 -translate-y-1/2 ml-3 px-3 py-1.5 text-xs font-medium text-white bg-gray-800 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50">
-                  Creado por Nørdware
-                </span>
+                </div>
+                {!collapsed && isExpanded && (
+                  <Link
+                    to={expandable.editPath}
+                    className={`flex items-center gap-3 px-3 py-2 ml-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isEditActive ? activeClasses : "text-white/50 hover:bg-white/5 hover:text-white"
+                    }`}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Edit size={16} />
+                    <span>{expandable.editLabel}</span>
+                  </Link>
+                )}
               </div>
-            ) : (
-              <>
-                <img
-                  src={nordwareFullLogo}
-                  alt="Nørdware"
-                  className="w-36 opacity-80 transition-all duration-300"
-                />
-                <p className="text-[11px] text-[var(--color-text-secondary)] text-center leading-tight">
-                  Creado por Nørdware
-                </p>
-              </>
-            )}
-          </div>
+            );
+          }
+
+          return (
+            <Link
+              key={path}
+              to={path}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                pathname === path ? activeClasses : inactiveClasses
+              }`}
+              onClick={() => setMobileOpen(false)}
+            >
+              {icon}
+              {!collapsed && <span>{label}</span>}
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* CTA: planifica tu futuro */}
+      {!collapsed && (
+        <div className="mx-3 mb-3 p-4 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-800 relative overflow-hidden shrink-0">
+          <PiggyBank className="absolute -bottom-3 -right-3 w-20 h-20 text-white/10" />
+          <p className="relative text-sm font-semibold text-white mb-1">Planifica tu futuro</p>
+          <p className="relative text-xs text-white/75 mb-3 leading-snug">
+            Crea bolsillos y toma el control de tus finanzas.
+          </p>
+          <Link
+            to="/pockets"
+            onClick={() => setMobileOpen(false)}
+            className="relative inline-flex items-center gap-1.5 text-xs font-semibold bg-white text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-white/90 transition"
+          >
+            <Plus size={14} /> Crear bolsillo
+          </Link>
         </div>
-      </aside>
-    </>
+      )}
+
+      {/* Usuario + créditos */}
+      <div className="shrink-0 border-t border-white/5 px-2 py-2">
+        <Link
+          to="/settings"
+          onClick={() => setMobileOpen(false)}
+          className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/5 transition"
+        >
+          <span className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
+            {getInitials(displayName)}
+          </span>
+          {!collapsed && (
+            <>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-white truncate">
+                  {displayName || "Usuario"}
+                </span>
+                <span className="block text-xs text-white/40 truncate">{user?.email || ""}</span>
+              </span>
+              <ChevronsRight size={14} className="text-white/30 shrink-0" />
+            </>
+          )}
+        </Link>
+        {!collapsed && (
+          <p className="text-[10px] text-white/25 text-center pt-2">Hecho por Nørdware</p>
+        )}
+      </div>
+    </aside>
   );
 }

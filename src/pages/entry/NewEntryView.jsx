@@ -168,7 +168,7 @@ export default function NewEntryView() {
 
   return (
     <Layout>
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
         <div className="text-center sm:text-left">
           <PageHeading title={isEditing ? "Editar movimiento" : "Registrar nuevo movimiento"} />
           <TabsSwitcher activeTab={activeTab} setActiveTab={handleTabChange} />

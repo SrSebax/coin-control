@@ -38,13 +38,13 @@ export default function SelectItemCard({
     return (
       <div
         onClick={onAdd}
-        className="border border-dashed border-gray-300 rounded-lg flex items-center justify-center p-4 hover:bg-gray-50 cursor-pointer transition"
+        className="border border-dashed border-divider rounded-lg flex items-center justify-center p-4 hover:bg-surface-alt cursor-pointer transition"
       >
         <div className="flex flex-col items-center">
           <div className={`p-2 rounded-full mb-2 ${addIconBgColor}`}>
             <Plus size={18} className={addIconColor} />
           </div>
-          <span className="text-sm font-medium text-gray-600">{addText}</span>
+          <span className="text-sm font-medium text-text-secondary">{addText}</span>
         </div>
       </div>
     );
@@ -64,7 +64,7 @@ export default function SelectItemCard({
   const IconComponent = getIconComponent(item.icon);
 
   return (
-    <div className="border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition p-4">
+    <div className="border border-divider rounded-lg shadow-sm hover:shadow-md transition p-4">
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center">
           <div
@@ -77,7 +77,7 @@ export default function SelectItemCard({
             <IconComponent size={20} />
           </div>
           <div>
-            <h3 className="font-medium text-gray-800">{item.name}</h3>
+            <h3 className="font-medium text-text">{item.name}</h3>
             {item.titleInfo && item.titleInfo}
           </div>
         </div>
@@ -90,7 +90,8 @@ export default function SelectItemCard({
             <div className="relative group">
               <button
                 onClick={() => onEdit(item.id)}
-                className="cursor-pointer p-2 bg-red-500 text-white hover:bg-red-600 rounded-full transition shadow-sm"
+                className="cursor-pointer p-2 text-white hover:opacity-85 rounded-full transition shadow-sm"
+                style={{ backgroundColor: item.color || defaultColor }}
                 aria-label="Editar"
               >
                 <Edit size={18} />
@@ -104,7 +105,7 @@ export default function SelectItemCard({
             <div className="relative group">
               <button
                 onClick={() => onDelete(item)}
-                className="cursor-pointer p-2 bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-full transition shadow-sm"
+                className="cursor-pointer p-2 bg-active text-text-secondary hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950/50 dark:hover:text-red-400 rounded-full transition shadow-sm"
                 aria-label="Eliminar"
               >
                 <Trash2 size={18} />

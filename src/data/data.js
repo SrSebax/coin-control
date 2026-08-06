@@ -5,7 +5,7 @@ export const moneyData = {
 };
 
 // Default categories for expenses and incomes (legacy)
-export const incomeCategories = ["Salario", "Venta", "Regalo"];
+export const incomeCategories = ["Trabajo", "Venta", "Regalo"];
 export const expenseCategories = ["Comida", "Transporte", "Salud", "Hogar"];
 
 // Default categories with icons and colors
@@ -17,7 +17,7 @@ export const defaultCategories = {
     { id: "hogar", name: "Hogar", color: "#36A2EB", icon: "Home" }
   ],
   income: [
-    { id: "salario", name: "Salario", color: "#9966FF", icon: "Briefcase" },
+    { id: "trabajo", name: "Trabajo", color: "#9966FF", icon: "Briefcase" },
     { id: "venta", name: "Venta", color: "#FF6384", icon: "DollarSign" },
     { id: "regalo", name: "Regalo", color: "#FFCE56", icon: "Gift" }
   ]

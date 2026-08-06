@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard,
+  Home,
   PieChart,
   Settings,
   FolderKanban,
@@ -9,8 +9,7 @@ import {
 } from "lucide-react";
 
 export const itemsRoutes = [
-  { path: "/home", label: "Inicio", icon: <LayoutDashboard size={20} /> },
-  { path: "/summary", label: "Resumen", icon: <PieChart size={20} /> },
+  { path: "/home", label: "Inicio", icon: <Home size={20} /> },
   {
     path: "/new-entry",
     label: "Movimientos",

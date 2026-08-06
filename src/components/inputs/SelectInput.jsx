@@ -110,32 +110,32 @@ export default function SelectInput({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-wide">
+      <label className="block text-sm font-semibold text-text-secondary mb-2 tracking-wide">
         {label} {label && "*"}
       </label>
       
       {/* Campo de selección personalizado */}
       <div 
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full rounded-xl border bg-white px-4 py-3 text-sm cursor-pointer flex items-center justify-between shadow-sm hover:bg-gray-50 transition ${
-          error ? "border-red-400" : "border-gray-300"
+        className={`w-full rounded-xl border bg-surface px-4 py-3 text-sm cursor-pointer flex items-center justify-between shadow-sm hover:bg-surface-alt transition ${
+          error ? "border-red-400" : "border-divider"
         }`}
       >
         <div className="flex items-center">
           {selectedOption && isObjectOptions && renderIcon(selectedOption)}
-          <span className={selectedLabel ? "text-gray-800" : "text-gray-400"}>
+          <span className={selectedLabel ? "text-text" : "text-text-muted"}>
             {selectedLabel || placeholder}
           </span>
         </div>
         <ChevronDown
           size={18}
-          className={`text-gray-500 transition-transform duration-200 ${isOpen ? "transform rotate-180" : ""}`}
+          className={`text-text-tertiary transition-transform duration-200 ${isOpen ? "transform rotate-180" : ""}`}
         />
       </div>
       
       {/* Menú desplegable */}
       {isOpen && (
-        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg py-1 max-h-60 overflow-y-auto">
+        <div className="absolute z-10 mt-1 w-full bg-surface border border-divider rounded-lg shadow-lg py-1 max-h-60 overflow-y-auto">
           {options.length > 0 ? (
             <>
               {options.map((option) => {
@@ -147,8 +147,8 @@ export default function SelectInput({
                   <div
                     key={optionValue}
                     onClick={() => handleSelect(option)}
-                    className={`px-4 py-2.5 text-sm cursor-pointer hover:bg-gray-100 transition-colors flex items-center ${
-                      isSelected ? "bg-gray-50 text-[var(--color-primary)] font-medium" : "text-gray-700"
+                    className={`px-4 py-2.5 text-sm cursor-pointer hover:bg-hover transition-colors flex items-center ${
+                      isSelected ? "bg-surface-alt text-[var(--color-primary)] font-medium" : "text-text-secondary"
                     }`}
                   >
                     {isObjectOptions && renderIcon(option)}
@@ -160,10 +160,10 @@ export default function SelectInput({
               {/* Opción para agregar nueva categoría */}
               {onAddNew && (
                 <>
-                  <div className="border-t border-gray-200 my-2"></div>
+                  <div className="border-t border-divider my-2"></div>
                   <div
                     onClick={handleAddNew}
-                    className="mx-3 my-1.5 px-3 py-2 rounded-lg bg-gray-50 text-sm cursor-pointer hover:bg-gray-100 transition-all text-[var(--color-primary)] flex items-center justify-center gap-2 font-medium"
+                    className="mx-3 my-1.5 px-3 py-2 rounded-lg bg-surface-alt text-sm cursor-pointer hover:bg-hover transition-all text-[var(--color-primary)] flex items-center justify-center gap-2 font-medium"
                   >
                     <Plus size={16} strokeWidth={2.5} className="text-[var(--color-primary)]" />
                     <span>{addNewLabel}</span>
@@ -172,7 +172,7 @@ export default function SelectInput({
               )}
             </>
           ) : (
-            <div className="px-4 py-2 text-sm text-gray-500">No hay opciones disponibles</div>
+            <div className="px-4 py-2 text-sm text-text-tertiary">No hay opciones disponibles</div>
           )}
         </div>
       )}

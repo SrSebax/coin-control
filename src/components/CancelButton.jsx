@@ -3,8 +3,8 @@ import { X } from "lucide-react";
 export default function CancelButton({
   Icon = X,
   label = "Cancelar",
-  color = "bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200",
-  text = "text-gray-700",
+  color = "bg-hover border border-divider text-text-secondary hover:bg-active",
+  text = "text-text-secondary",
   sizeClass = "w-full",
   disabled = false,
   onClick,

@@ -1,0 +1,81 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowDownCircle, ArrowUpCircle, Eye, EyeOff } from "lucide-react";
+import { useTransactions } from "../hooks/useLocalStorage";
+import { parseLocalDate } from "../utils/date";
+
+const formatCurrency = (value) => {
+  const n = Number(value || 0);
+  const sign = n < 0 ? "-" : "";
+  return `${sign}$${Math.abs(n).toLocaleString("es-CO", { minimumFractionDigits: 2 })}`;
+};
+
+function percentChange(current, previous) {
+  if (previous === 0) return current === 0 ? 0 : 100;
+  return ((current - previous) / Math.abs(previous)) * 100;
+}
+
+export default function BalanceHero() {
+  const [hideBalance, setHideBalance] = useState(false);
+  const navigate = useNavigate();
+  const { transactions, summary } = useTransactions();
+
+  const saldo = summary.ingresos - summary.gastos;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayNet = transactions
+    .filter((t) => parseLocalDate(t.date).toDateString() === today.toDateString())
+    .reduce((sum, t) => sum + (t.type === "income" ? t.amount : -t.amount), 0);
+  const saldoAyer = saldo - todayNet;
+  const deltaPercent = percentChange(saldo, saldoAyer);
+
+  const quickAdd = (type) => navigate("/new-entry", { state: { type } });
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0a1f1a] to-[#0d2b22] text-white p-5 sm:p-6 shadow-lg flex flex-col justify-between">
+      <div>
+        <div className="flex items-center gap-2">
+          <p className="text-white/70 text-sm font-medium">Saldo disponible</p>
+          <button
+            onClick={() => setHideBalance((v) => !v)}
+            className="cursor-pointer text-white/50 hover:text-white transition-colors"
+            aria-label={hideBalance ? "Mostrar saldo" : "Ocultar saldo"}
+          >
+            {hideBalance ? <EyeOff size={15} /> : <Eye size={15} />}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 mt-1 flex-wrap">
+          <p className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+            {hideBalance ? "••••••••" : formatCurrency(saldo)}
+          </p>
+          <span
+            className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
+              deltaPercent >= 0
+                ? "bg-emerald-400/20 text-emerald-300"
+                : "bg-rose-400/20 text-rose-300"
+            }`}
+          >
+            {deltaPercent >= 0 ? "↑" : "↓"} {Math.abs(deltaPercent).toFixed(1)}% vs ayer
+          </span>
+        </div>
+      </div>
+
+      <div className="relative flex gap-2 mt-5">
+        <button
+          onClick={() => quickAdd("income")}
+          className="cursor-pointer flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-medium transition-colors"
+        >
+          <ArrowUpCircle size={16} /> Agregar ingreso
+        </button>
+        <button
+          onClick={() => quickAdd("expense")}
+          className="cursor-pointer flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-white text-sm font-medium transition-colors"
+        >
+          <ArrowDownCircle size={16} /> Agregar gasto
+        </button>
+      </div>
+    </div>
+  );
+}

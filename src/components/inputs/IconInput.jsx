@@ -48,13 +48,13 @@ export default function IconInput({ value, onChange, label = "Icono", name = "ic
 
   return (
     <div className="w-full h-full flex flex-col">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
+      <label htmlFor={name} className="block text-sm font-medium text-text-secondary mb-2">
         {label}
       </label>
       
       {selectedIcon && (
-        <div className="mb-3 p-2 bg-gray-50 border border-gray-200 rounded-md flex items-center">
-          <div className="p-1.5 bg-white rounded-md shadow-sm mr-2">
+        <div className="mb-3 p-2 bg-surface-alt border border-divider rounded-md flex items-center">
+          <div className="p-1.5 bg-surface rounded-md shadow-sm mr-2">
             <selectedIcon.component size={20} />
           </div>
           <div className="text-sm font-medium">
@@ -63,15 +63,15 @@ export default function IconInput({ value, onChange, label = "Icono", name = "ic
         </div>
       )}
       
-      <div className="w-full p-3 border border-gray-300 rounded-md bg-white flex-grow">
+      <div className="w-full p-3 border border-divider rounded-md bg-surface flex-grow">
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-48 overflow-y-auto pr-2 pb-2 pl-2 pt-2">
           {icons.map((icon) => (
             <button
               key={icon.englishName}
               type="button"
               onClick={() => handleIconSelect(icon.englishName)}
-              className={`cursor-pointer p-3 rounded-md hover:bg-gray-50 transition-all duration-200 ${
-                icon.englishName === value ? "bg-[var(--color-primary-light)] ring-2 ring-[var(--color-primary)]" : "border border-gray-200"
+              className={`cursor-pointer p-3 rounded-md hover:bg-surface-alt transition-all duration-200 ${
+                icon.englishName === value ? "bg-[var(--color-primary-light)] ring-2 ring-[var(--color-primary)]" : "border border-divider"
               }`}
             >
               <div className="flex flex-col items-center w-full">

@@ -13,6 +13,7 @@ import ConfirmModal from "../../components/ConfirmModal";
 import { PiggyBank, Save } from "lucide-react";
 import { usePockets } from "../../hooks/usePockets";
 import CancelButton from "../../components/CancelButton";
+import { parseLocalDate } from "../../utils/date";
 
 export default function EditPocketView() {
   const navigate = useNavigate();
@@ -75,7 +76,7 @@ export default function EditPocketView() {
       return;
     }
 
-    const startDate = new Date(formData.startDate);
+    const startDate = parseLocalDate(formData.startDate);
     let nextDate = new Date(startDate);
     let frequencyText = "";
 
@@ -232,17 +233,17 @@ export default function EditPocketView() {
 
   return (
     <Layout>
-      <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6">
+      <div className="bg-surface rounded-2xl shadow-md border border-divider p-6">
         <div className="text-center sm:text-left">
           <PageHeading title="Editar bolsillo" />
-          <p className="text-gray-600 mt-2">
+          <p className="text-text-secondary mt-2">
             Modifica la información de tu bolsillo de ahorro
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-8">
           {/* Sección de información básica */}
-          <div className="border-b border-gray-200 pb-6">
+          <div className="border-b border-divider pb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <NameInput
@@ -277,10 +278,10 @@ export default function EditPocketView() {
           {/* Sección de metas de ahorro */}
           <div
             className={
-              formData.scheduledAmount ? "border-b border-gray-200 pb-6" : ""
+              formData.scheduledAmount ? "border-b border-divider pb-6" : ""
             }
           >
-            <h3 className="text-lg font-medium text-gray-800 mb-4">
+            <h3 className="text-lg font-medium text-text mb-4">
               Metas de ahorro
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -307,7 +308,7 @@ export default function EditPocketView() {
           {/* Sección de programación - solo visible si hay monto programado */}
           {formData.scheduledAmount && (
             <div>
-              <h3 className="text-lg font-medium text-gray-800 mb-4">
+              <h3 className="text-lg font-medium text-text mb-4">
                 Programación de ahorro
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -332,9 +333,9 @@ export default function EditPocketView() {
 
               {/* Mensaje de programación */}
               {savingMessage && (
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-lg text-blue-800">
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900 rounded-lg text-blue-800 dark:text-blue-200">
                   <div className="flex items-center">
-                    <PiggyBank className="mr-2 text-blue-500" size={20} />
+                    <PiggyBank className="mr-2 text-blue-500 dark:text-blue-300" size={20} />
                     <p>{savingMessage}</p>
                   </div>
                 </div>

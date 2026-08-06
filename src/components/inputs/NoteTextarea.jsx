@@ -18,7 +18,7 @@ export default function NoteTextarea({
 }) {
   return (
     <div className={className}>
-      <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-wide">
+      <label className="block text-sm font-semibold text-text-secondary mb-2 tracking-wide">
         {label}
       </label>
       <textarea
@@ -34,9 +34,9 @@ export default function NoteTextarea({
         disabled={disabled}
         autoFocus={autoFocus}
         readOnly={readOnly}
-        className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition min-h-[80px] ${
-          error ? "border-red-400" : "border-gray-300"
-        } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""} ${
+        className={`w-full rounded-xl border bg-surface px-4 py-3 text-sm text-text placeholder-text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition min-h-[80px] ${
+          error ? "border-red-400" : "border-divider"
+        } ${disabled ? "bg-hover cursor-not-allowed" : ""} ${
           resize ? "resize" : "resize-none"
         }`}
       />

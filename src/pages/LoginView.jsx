@@ -23,12 +23,12 @@ export default function LoginView() {
   const [resetEmail, setResetEmail] = useState("");
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-[#f0f9ff] via-[#e5f7f5] to-[#dff7f4] flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen w-full bg-gradient-to-br from-[var(--color-primary-soft)] via-[var(--color-background)] to-[var(--color-background)] flex items-center justify-center px-4 relative overflow-hidden">
       {/* Elementos decorativos de fondo */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-gradient-to-br from-teal-100/40 to-teal-300/30 blur-3xl"></div>
-        <div className="absolute bottom-[-15%] right-[-5%] w-[50%] h-[50%] rounded-full bg-gradient-to-tl from-blue-100/30 to-teal-200/20 blur-3xl"></div>
-        <div className="absolute top-[40%] right-[10%] w-[20%] h-[20%] rounded-full bg-gradient-to-br from-teal-200/20 to-teal-300/10 blur-2xl"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-gradient-to-br from-teal-100/40 to-teal-300/30 dark:from-teal-500/10 dark:to-teal-700/10 blur-3xl"></div>
+        <div className="absolute bottom-[-15%] right-[-5%] w-[50%] h-[50%] rounded-full bg-gradient-to-tl from-blue-100/30 to-teal-200/20 dark:from-blue-500/10 dark:to-teal-700/10 blur-3xl"></div>
+        <div className="absolute top-[40%] right-[10%] w-[20%] h-[20%] rounded-full bg-gradient-to-br from-teal-200/20 to-teal-300/10 dark:from-teal-500/10 dark:to-teal-700/5 blur-2xl"></div>
       </div>
       
       {/* Toast */}
@@ -52,12 +52,12 @@ export default function LoginView() {
         <img src={nordwareLogo} alt="Nørdware" className="h-15 drop-shadow-md" />
       </div>
 
-      <div className="w-full max-w-md bg-white/90 backdrop-blur-sm border border-gray-100 shadow-2xl rounded-2xl p-8 animate-fade-in relative z-10">
+      <div className="w-full max-w-md bg-surface/90 backdrop-blur-sm border border-divider shadow-2xl rounded-2xl p-8 animate-fade-in relative z-10">
         <div className="text-center mb-6">
           <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-500 mb-2">
             CoinControl
           </h1>
-          <p className="text-center text-gray-500 text-sm">
+          <p className="text-center text-text-tertiary text-sm">
             Controla tus ingresos y gastos fácilmente
           </p>
         </div>
@@ -68,24 +68,24 @@ export default function LoginView() {
               <button 
                 type="button" 
                 onClick={() => setShowResetForm(false)}
-                className="text-gray-500 hover:text-gray-700 mr-2"
+                className="text-text-tertiary hover:text-text-secondary mr-2"
               >
                 <FiArrowLeft size={20} />
               </button>
-              <h2 className="text-xl font-bold text-gray-800">Recuperar contraseña</h2>
+              <h2 className="text-xl font-bold text-text">Recuperar contraseña</h2>
             </div>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-text-secondary mb-4">
               Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
             </p>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-text-secondary mb-1">
                 Correo electrónico
               </label>
               <input
                 type="email"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent shadow-sm transition-all duration-200"
+                className="w-full px-4 py-3 rounded-lg border border-divider bg-surface/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent shadow-sm transition-all duration-200"
                 placeholder="tucorreo@ejemplo.com"
               />
             </div>
@@ -104,20 +104,20 @@ export default function LoginView() {
         ) : (
           <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-text-secondary mb-1">
               Correo electrónico
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent shadow-sm transition-all duration-200"
+              className="w-full px-4 py-3 rounded-lg border border-divider bg-surface/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent shadow-sm transition-all duration-200"
               placeholder="tucorreo@ejemplo.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-text-secondary mb-1">
               Contraseña
             </label>
             <div className="relative">
@@ -125,13 +125,13 @@ export default function LoginView() {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 pr-10 rounded-lg border border-gray-200 bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent shadow-sm transition-all duration-200"
+                className="w-full px-4 py-3 pr-10 rounded-lg border border-divider bg-surface/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent shadow-sm transition-all duration-200"
                 placeholder="••••••••"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-text-tertiary hover:text-text-secondary"
                 aria-label={
                   showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
                 }
@@ -152,7 +152,7 @@ export default function LoginView() {
                   setShowResetForm(true);
                   setResetEmail(email);
                 }}
-                className="text-sm text-teal-600 hover:text-teal-800 font-medium transition-colors duration-200"
+                className="text-sm text-teal-600 dark:text-teal-300 hover:text-teal-800 dark:hover:text-teal-200 font-medium transition-colors duration-200"
               >
                 ¿Olvidaste tu contraseña?
               </button>
@@ -168,7 +168,7 @@ export default function LoginView() {
             </button>
             <button
               onClick={registerWithEmail}
-              className="w-1/2 py-3 rounded-lg border border-teal-500 text-teal-600 hover:border-teal-600 hover:bg-teal-50 font-semibold shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
+              className="w-1/2 py-3 rounded-lg border border-teal-500 text-teal-600 dark:text-teal-300 hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/40 font-semibold shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
             >
               Registrarse
             </button>
@@ -177,20 +177,20 @@ export default function LoginView() {
         )}
 
         <div className="flex items-center my-5">
-          <div className="flex-grow h-px bg-gray-200" />
-          <span className="text-gray-400 mx-3 text-sm">o</span>
-          <div className="flex-grow h-px bg-gray-200" />
+          <div className="flex-grow h-px bg-active" />
+          <span className="text-text-muted mx-3 text-sm">o</span>
+          <div className="flex-grow h-px bg-active" />
         </div>
 
         <button
           onClick={loginWithGoogle}
-          className="w-full flex items-center justify-center gap-3 py-3 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
+          className="w-full flex items-center justify-center gap-3 py-3 rounded-lg border border-divider text-text-secondary hover:bg-surface-alt shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
         >
           <FcGoogle size={20} />
           Iniciar sesión con Google
         </button>
 
-        <div className="mt-8 text-xs text-center text-gray-500 space-y-1">
+        <div className="mt-8 text-xs text-center text-text-tertiary space-y-1">
           <p>
             Desarrollado por{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-500 font-semibold">

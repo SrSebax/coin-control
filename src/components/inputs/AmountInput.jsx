@@ -48,12 +48,12 @@ export default function AmountInput({
 
   return (
     <div className={className}>
-      <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-wide">
+      <label className="block text-sm font-semibold text-text-secondary mb-2 tracking-wide">
         {label}
       </label>
       <div className="relative">
         {currencySymbol && (
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-tertiary">
             {currencySymbol}
           </span>
         )}
@@ -68,14 +68,14 @@ export default function AmountInput({
           disabled={disabled}
           autoFocus={autoFocus}
           readOnly={readOnly}
-          className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition ${
-            error ? "border-red-400" : "border-gray-300"
-          } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""} ${
+          className={`w-full rounded-xl border bg-surface px-4 py-3 text-sm text-text placeholder-text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition ${
+            error ? "border-red-400" : "border-divider"
+          } ${disabled ? "bg-hover cursor-not-allowed" : ""} ${
             currencySymbol ? "pl-8" : ""
           } ${showCurrency ? "pr-14" : ""}`}
         />
         {showCurrency && (
-          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-tertiary font-medium">
             COP
           </span>
         )}

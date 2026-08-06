@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import './index.css';
+import './hooks/useTheme'; // aplica la clase .dark antes del primer render, evita flash de tema
 
 
 

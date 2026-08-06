@@ -85,7 +85,7 @@ export default function SelectPocketView() {
               <span>Progreso</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-active rounded-full h-2">
               <div
                 className="bg-[var(--color-primary)] h-2 rounded-full"
                 style={{ width: `${progress}%` }}
@@ -99,7 +99,7 @@ export default function SelectPocketView() {
         )}
 
         {pocket.scheduledAmount && (
-          <div className="text-sm text-gray-600 mt-2">
+          <div className="text-sm text-text-secondary mt-2">
             <p>Ahorro programado: {formatCurrency(pocket.scheduledAmount)} ({pocket.frequency})</p>
             {pocket.nextSavingDate && (
               <p>Próximo ahorro: {formatDate(pocket.nextSavingDate)}</p>
@@ -112,10 +112,10 @@ export default function SelectPocketView() {
 
   return (
     <Layout>
-      <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-6">
+      <div className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
         <div className="text-center sm:text-left">
           <PageHeading title="Seleccionar bolsillo" />
-          <p className="text-gray-600 mt-2">Selecciona un bolsillo para editar o eliminar</p>
+          <p className="text-text-secondary mt-2">Selecciona un bolsillo para editar o eliminar</p>
         </div>
 
         {loading ? (

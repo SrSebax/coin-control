@@ -99,16 +99,16 @@ export default function DateInput({
     <div 
       onClick={onClick}
       ref={ref}
-      className={`w-full rounded-xl border bg-white px-4 py-3 text-sm cursor-pointer flex items-center justify-between shadow-sm hover:bg-gray-50 transition ${
-        error ? "border-red-400" : isOpen ? "border-[var(--color-primary)] ring-2 ring-[var(--color-primary)] ring-opacity-20" : "border-gray-300"
+      className={`w-full rounded-xl border bg-surface px-4 py-3 text-sm cursor-pointer flex items-center justify-between shadow-sm hover:bg-surface-alt transition ${
+        error ? "border-red-400" : isOpen ? "border-[var(--color-primary)] ring-2 ring-[var(--color-primary)] ring-opacity-20" : "border-divider"
       }`}
     >
-      <span className={selectedDate ? "text-gray-800" : "text-gray-400"}>
+      <span className={selectedDate ? "text-text" : "text-text-muted"}>
         {selectedDate ? formatDisplayDate(selectedDate) : "Selecciona una fecha"}
       </span>
       <Calendar
         size={18}
-        className="text-gray-500"
+        className="text-text-tertiary"
       />
     </div>
   ));
@@ -117,7 +117,7 @@ export default function DateInput({
 
   return (
     <div className="relative">
-      <label className="block text-sm font-semibold text-gray-700 mb-2 tracking-wide">
+      <label className="block text-sm font-semibold text-text-secondary mb-2 tracking-wide">
         {label} {label && "*"}
       </label>
       
@@ -132,7 +132,7 @@ export default function DateInput({
         showPopperArrow={false}
         popperClassName="date-picker-popper"
         popperPlacement="bottom-start"
-        calendarClassName="rounded-lg border border-gray-200 shadow-lg"
+        calendarClassName="rounded-lg border border-divider shadow-lg"
         wrapperClassName="w-full"
         todayButton="Hoy"
         placeholderText="Selecciona una fecha"

@@ -7,7 +7,7 @@ export default function SplashView() {
       {/* Círculos decorativos animados */}
       <div className="absolute top-10 right-10 w-40 h-40 bg-teal-200 rounded-full blur-3xl opacity-30 animate-pulse" />
       <div className="absolute bottom-14 left-14 w-32 h-32 bg-teal-300 rounded-full blur-2xl opacity-20 animate-ping" />
-      <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 w-80 h-80 bg-white rounded-full blur-[100px] opacity-10" />
+      <div className="absolute -top-20 left-1/2 transform -translate-x-1/2 w-80 h-80 bg-surface rounded-full blur-[100px] opacity-10" />
 
       {/* Logo central */}
       <img

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { parseLocalDate } from '../utils/date';
 
 export function useLocalStorage(key, initialValue) {
   // Obtener el valor inicial del localStorage o usar el valor por defecto
@@ -106,21 +107,21 @@ export function useTransactions() {
       const currentYear = now.getFullYear();
       
       return transactions.filter(t => {
-        const transactionDate = new Date(t.date);
-        return transactionDate.getMonth() === currentMonth && 
+        const transactionDate = parseLocalDate(t.date);
+        return transactionDate.getMonth() === currentMonth &&
                transactionDate.getFullYear() === currentYear;
       });
     }
-    
+
     // Si se proporcionan fechas, filtrar por el rango
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    
+    const start = parseLocalDate(startDate);
+    const end = parseLocalDate(endDate);
+
     // Ajustar end para incluir todo el día final
     end.setHours(23, 59, 59, 999);
-    
+
     return transactions.filter(t => {
-      const transactionDate = new Date(t.date);
+      const transactionDate = parseLocalDate(t.date);
       return transactionDate >= start && transactionDate <= end;
     });
   };

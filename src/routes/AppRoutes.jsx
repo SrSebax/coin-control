@@ -15,10 +15,13 @@ import NewCategoryView from "../pages/categories/NewCategoryView";
 import EditCategoryView from "../pages/categories/EditCategoryView";
 import SelectCategoryView from "../pages/categories/SelectCategoryView";
 import ConfigurationView from "../pages/ConfigurationView";
+import { useRecurrenceSync } from "../hooks/useRecurrenceSync";
 
 export default function AppRoutes() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+
+  useRecurrenceSync(!!user);
 
   useEffect(() => {
     let resolvedAuth = false;

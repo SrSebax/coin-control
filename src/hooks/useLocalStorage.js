@@ -78,6 +78,14 @@ export function useTransactions() {
     setSummary(newSummary);
   };
   
+  // Reemplaza toda la lista de una vez (usado por el motor de recurrencia,
+  // que necesita agregar varias transacciones y actualizar plantillas en un
+  // solo golpe para no perder cambios por closures desactualizados).
+  const replaceTransactions = (newTransactions) => {
+    setTransactions(newTransactions);
+    setSummary(calculateSummary(newTransactions));
+  };
+
   // Actualizar transacción existente
   const updateTransaction = (transactionId, updatedData) => {
     const newTransactions = transactions.map(t => 
@@ -132,6 +140,7 @@ export function useTransactions() {
     addTransaction,
     deleteTransaction,
     updateTransaction,
+    replaceTransactions,
     getTransactionsByType,
     getTransactionsByPeriod,
     calculateSummary

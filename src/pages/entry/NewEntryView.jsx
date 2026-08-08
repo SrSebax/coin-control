@@ -11,6 +11,7 @@ import ConfirmModal from "../../components/ConfirmModal";
 import MovementRow from "../../components/MovementRow";
 import ToastMessage from "../../components/ToastMessage";
 import CategoryPickerSheet from "../../components/CategoryPickerSheet";
+import RecurrenceSheet from "../../components/RecurrenceSheet";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
@@ -31,6 +32,7 @@ import {
 import { useTransactions } from "../../hooks/useLocalStorage";
 import { useCategories } from "../../hooks/useCategories";
 import { parseLocalDate } from "../../utils/date";
+import { describeRecurrence } from "../../utils/recurrence";
 
 const formatCurrency = (value) => {
   const n = Number(value || 0);
@@ -94,14 +96,16 @@ export default function NewEntryView() {
         date: existingTransaction.date.split("T")[0] || "",
         note: existingTransaction.note || "",
         recurring: existingTransaction.recurring || false,
+        recurrence: existingTransaction.recurrence || null,
       };
     }
     if (location.state?.restoredFormData) return location.state.restoredFormData;
-    return { amount: "", name: "", category: "", date: "", note: "", recurring: false };
+    return { amount: "", name: "", category: "", date: "", note: "", recurring: false, recurrence: null };
   });
 
   const [touched, setTouched] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recurrenceSheetOpen, setRecurrenceSheetOpen] = useState(false);
   const [mobileNoteOpen, setMobileNoteOpen] = useState(() =>
     Boolean(existingTransaction?.note || location.state?.restoredFormData?.note)
   );
@@ -131,6 +135,7 @@ export default function NewEntryView() {
       date: formData.date,
       note: formData.note.trim() || null,
       recurring: formData.recurring,
+      recurrence: formData.recurring ? formData.recurrence : null,
     };
 
     setConfirmModal({
@@ -165,6 +170,7 @@ export default function NewEntryView() {
             date: prev.date,
             note: "",
             recurring: false,
+            recurrence: null,
           }));
           setTouched({});
           setMobileNoteOpen(false);
@@ -356,18 +362,44 @@ export default function NewEntryView() {
               </button>
             )}
 
-            <button
-              type="button"
-              onClick={() => setFormData((prev) => ({ ...prev, recurring: !prev.recurring }))}
-              className={`cursor-pointer inline-flex items-center gap-1.5 text-sm font-medium rounded-full px-4 py-2 border transition-colors ${
-                formData.recurring
-                  ? "bg-emerald-500 border-emerald-500 text-white"
-                  : "text-text-secondary border-divider hover:bg-hover"
-              }`}
-            >
-              <Repeat size={14} /> Recurrente
-            </button>
+            {formData.recurring ? (
+              <div className="inline-flex items-center gap-1 rounded-full pl-1 pr-1 py-1 bg-emerald-500 text-white">
+                <button
+                  type="button"
+                  onClick={() => setRecurrenceSheetOpen(true)}
+                  className="cursor-pointer inline-flex items-center gap-1.5 text-sm font-medium pl-3 pr-1 py-1"
+                >
+                  <Repeat size={14} />
+                  {describeRecurrence(formData.recurrence)}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData((prev) => ({ ...prev, recurring: false, recurrence: null }))}
+                  aria-label="Quitar recurrencia"
+                  className="cursor-pointer p-1.5 rounded-full hover:bg-white/20 transition-colors"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setRecurrenceSheetOpen(true)}
+                className="cursor-pointer inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary border border-divider rounded-full px-4 py-2 hover:bg-hover transition-colors"
+              >
+                <Repeat size={14} /> Recurrente
+              </button>
+            )}
           </div>
+
+          <RecurrenceSheet
+            open={recurrenceSheetOpen}
+            onClose={() => setRecurrenceSheetOpen(false)}
+            value={formData.recurrence}
+            transactionDate={formData.date}
+            onApply={(recurrence) => setFormData((prev) => ({ ...prev, recurring: true, recurrence }))}
+            onRemove={() => setFormData((prev) => ({ ...prev, recurring: false, recurrence: null }))}
+          />
 
           {mobileNoteOpen && (
             <NoteTextarea value={formData.note} onChange={handleChange} className="" maxLength={200} />

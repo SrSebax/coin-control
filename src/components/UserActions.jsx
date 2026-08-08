@@ -15,7 +15,7 @@ export default function UserActions() {
 
   return (
     <div className="relative">
-      <div className="w-9 h-9 bg-[var(--color-primary)] rounded-full flex items-center justify-center shadow-sm">
+      <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center shadow-sm">
         <span className="text-white text-sm font-bold">
           {getUserInitials(user?.displayName || user?.email?.split("@")[0] || "Usuario")}
         </span>

@@ -9,6 +9,8 @@ import DateInput from "../../components/inputs/DateInput";
 import NoteTextarea from "../../components/inputs/NoteTextarea";
 import ConfirmModal from "../../components/ConfirmModal";
 import MovementRow from "../../components/MovementRow";
+import ToastMessage from "../../components/ToastMessage";
+import CategoryPickerSheet from "../../components/CategoryPickerSheet";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
@@ -20,6 +22,11 @@ import {
   Zap,
   RefreshCw,
   History,
+  ChevronLeft,
+  ChevronRight,
+  Tag,
+  Plus,
+  Repeat,
 } from "lucide-react";
 import { useTransactions } from "../../hooks/useLocalStorage";
 import { useCategories } from "../../hooks/useCategories";
@@ -86,13 +93,21 @@ export default function NewEntryView() {
         category: existingTransaction.category || "",
         date: existingTransaction.date.split("T")[0] || "",
         note: existingTransaction.note || "",
+        recurring: existingTransaction.recurring || false,
       };
     }
-    return { amount: "", name: "", category: "", date: "", note: "" };
+    if (location.state?.restoredFormData) return location.state.restoredFormData;
+    return { amount: "", name: "", category: "", date: "", note: "", recurring: false };
   });
 
   const [touched, setTouched] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [mobileNoteOpen, setMobileNoteOpen] = useState(() =>
+    Boolean(existingTransaction?.note || location.state?.restoredFormData?.note)
+  );
+  const [categorySheetOpen, setCategorySheetOpen] = useState(false);
+  const [saveAndAddAnother, setSaveAndAddAnother] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -102,7 +117,7 @@ export default function NewEntryView() {
   const isEmpty = (field) =>
     touched[field] && (!formData[field] || formData[field].trim() === "");
 
-  const isFormValid = formData.amount && formData.name && formData.category && formData.date;
+  const isFormValid = formData.amount && formData.category && formData.date;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -115,6 +130,7 @@ export default function NewEntryView() {
       category: formData.category,
       date: formData.date,
       note: formData.note.trim() || null,
+      recurring: formData.recurring,
     };
 
     setConfirmModal({
@@ -141,12 +157,26 @@ export default function NewEntryView() {
         });
       } else {
         addTransaction(confirmModal.data);
-        navigate("/", {
-          state: {
-            message: `${isExpense ? "Gasto" : "Ingreso"} registrado exitosamente`,
-            type: "success",
-          },
-        });
+        if (saveAndAddAnother) {
+          setFormData((prev) => ({
+            amount: "",
+            name: "",
+            category: "",
+            date: prev.date,
+            note: "",
+            recurring: false,
+          }));
+          setTouched({});
+          setMobileNoteOpen(false);
+          setToast({ message: `${isExpense ? "Gasto" : "Ingreso"} guardado`, type: "success" });
+        } else {
+          navigate("/", {
+            state: {
+              message: `${isExpense ? "Gasto" : "Ingreso"} registrado exitosamente`,
+              type: "success",
+            },
+          });
+        }
       }
     } catch (error) {
       console.error("Error al guardar la transacción:", error);
@@ -167,6 +197,14 @@ export default function NewEntryView() {
   const handleFocusName = () => {
     formCardRef.current?.querySelector('input[name="name"]')?.focus();
   };
+
+  useEffect(() => {
+    if (location.state?.restoredFormData) {
+      setToast({ message: "Categoría creada y seleccionada", type: "success" });
+      window.history.replaceState({}, document.title);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!formData.date) {
@@ -216,15 +254,175 @@ export default function NewEntryView() {
   const pageSubtitle = isEditing
     ? "Actualiza los datos de tu movimiento"
     : "Agrega tus ingresos o gastos fácilmente";
+  const mobileTitle = isEditing
+    ? isExpense
+      ? "Editar Gasto"
+      : "Editar Ingreso"
+    : isExpense
+    ? "Nuevo Gasto"
+    : "Nuevo Ingreso";
 
   return (
     <Layout title={pageTitle} subtitle={pageSubtitle}>
-      {/* En mobile el header no muestra el título; va aquí, igual que en Inicio */}
-      <div className="md:hidden mb-5">
-        <h1 className="text-lg font-bold text-text">{pageTitle}</h1>
-        <p className="text-xs text-text-tertiary">{pageSubtitle}</p>
-      </div>
+      <ToastMessage
+        open={!!toast}
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
 
+      {/* Formulario mobile: pantalla dedicada, distinta del layout de escritorio */}
+      <form onSubmit={handleSubmit} className="md:hidden pb-32">
+        <div className="flex items-center gap-3 -mx-4 px-4 pb-4 mb-2 border-b border-divider">
+          <button
+            type="button"
+            onClick={handleCancel}
+            aria-label="Volver"
+            className="cursor-pointer p-1.5 -m-1.5 rounded-full text-text hover:bg-hover transition-colors"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <h1 className="text-lg font-bold text-text">{mobileTitle}</h1>
+        </div>
+
+        <AmountInput
+          variant="hero"
+          className="py-6"
+          value={formData.amount}
+          onChange={handleChange}
+          onBlur={() => setTouched((prev) => ({ ...prev, amount: true }))}
+          placeholder="0"
+          autoFocus
+        />
+
+        <div className="flex justify-center mb-6">
+          <DateInput
+            variant="pill"
+            value={formData.date}
+            onChange={handleChange}
+            onBlur={() => setTouched((prev) => ({ ...prev, date: true }))}
+            name="date"
+          />
+        </div>
+
+        <div className="space-y-5">
+          <NameInput
+            variant="flat"
+            value={formData.name}
+            onChange={handleChange}
+            label="Descripción (opcional)"
+            placeholder={isExpense ? "¿En qué gastaste?" : "¿De dónde proviene?"}
+            maxLength={100}
+          />
+
+          <div className="border-t border-divider" />
+
+          <div>
+            <p className="text-sm text-text-tertiary mb-1.5">Categoría</p>
+            <button
+              type="button"
+              onClick={() => setCategorySheetOpen(true)}
+              className="cursor-pointer w-full flex items-center justify-between py-1"
+            >
+              <span className="flex items-center gap-2 min-w-0">
+                {selectedCategory ? (
+                  <>
+                    <span className="shrink-0" style={{ color: selectedCategory.color }}>
+                      {SelectedCategoryIcon ? <SelectedCategoryIcon size={18} /> : <Tag size={18} />}
+                    </span>
+                    <span className="text-text truncate">{selectedCategory.name}</span>
+                  </>
+                ) : (
+                  <>
+                    <Tag size={18} className="text-text-muted shrink-0" />
+                    <span className="text-text-muted">Seleccionar categoría</span>
+                  </>
+                )}
+              </span>
+              <ChevronRight size={18} className="text-text-muted shrink-0" />
+            </button>
+          </div>
+
+          <div className="border-t border-divider" />
+
+          <div className="flex flex-wrap gap-2">
+            {!mobileNoteOpen && (
+              <button
+                type="button"
+                onClick={() => setMobileNoteOpen(true)}
+                className="cursor-pointer inline-flex items-center gap-1.5 text-sm font-medium text-text-secondary border border-divider rounded-full px-4 py-2 hover:bg-hover transition-colors"
+              >
+                <Plus size={14} /> Agregar nota
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setFormData((prev) => ({ ...prev, recurring: !prev.recurring }))}
+              className={`cursor-pointer inline-flex items-center gap-1.5 text-sm font-medium rounded-full px-4 py-2 border transition-colors ${
+                formData.recurring
+                  ? "bg-emerald-500 border-emerald-500 text-white"
+                  : "text-text-secondary border-divider hover:bg-hover"
+              }`}
+            >
+              <Repeat size={14} /> Recurrente
+            </button>
+          </div>
+
+          {mobileNoteOpen && (
+            <NoteTextarea value={formData.note} onChange={handleChange} className="" maxLength={200} />
+          )}
+        </div>
+
+        {/* Footer fijo */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-divider p-4 pb-6 space-y-3">
+          {!isEditing && (
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-text">Guardar y agregar otro</span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={saveAndAddAnother}
+                onClick={() => setSaveAndAddAnother((v) => !v)}
+                className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  saveAndAddAnother ? "bg-emerald-500" : "bg-hover"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    saveAndAddAnother ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={!isFormValid || isSubmitting}
+            className={`cursor-pointer w-full inline-flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-white shadow disabled:opacity-50 disabled:cursor-not-allowed transition ${
+              isExpense
+                ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
+                : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
+            }`}
+          >
+            {isSubmitting && <Loader2 size={18} className="animate-spin" />}
+            {isSubmitting ? "Guardando..." : "Guardar"}
+          </button>
+        </div>
+      </form>
+
+      <CategoryPickerSheet
+        open={categorySheetOpen}
+        onClose={() => setCategorySheetOpen(false)}
+        categories={categorias}
+        selectedId={formData.category}
+        onSelect={(id) => handleChange({ target: { name: "category", value: id } })}
+        type={isExpense ? "expense" : "income"}
+        draft={formData}
+      />
+
+      {/* Escritorio: layout con panel lateral, sin cambios */}
+      <div className="hidden md:block">
       <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-6 items-start">
         {/* Formulario */}
         <form
@@ -476,6 +674,7 @@ export default function NewEntryView() {
             )}
           </div>
         </div>
+      </div>
       </div>
 
       <ConfirmModal

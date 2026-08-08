@@ -4,24 +4,29 @@ import ModalPortal from "./ModalPortal";
 export default function ConfirmModal({ open, title, message, onConfirm, onCancel }) {
   return (
     <ModalPortal isOpen={open}>
-      <div className="w-full max-w-md mx-auto bg-surface border border-divider rounded-2xl shadow-2xl p-6 animate-fade-in">
+      <div
+        className="w-full self-end rounded-t-3xl pb-8 pt-3 md:self-auto md:max-w-md md:mx-auto md:rounded-2xl md:py-6 bg-surface border border-divider shadow-2xl px-6 animate-slide-up md:animate-fade-in"
+      >
+        {/* Handle: solo mobile */}
+        <div className="w-10 h-1.5 rounded-full bg-divider mx-auto mb-5 md:hidden" />
+
         {/* Título */}
         <h2 className="text-xl font-extrabold text-[var(--color-primary)] mb-1">{title}</h2>
 
         {/* Mensaje */}
-        <p className="text-sm text-text-secondary mb-4">{message}</p>
+        <p className="text-sm text-text-secondary mb-6 md:mb-4">{message}</p>
 
-        {/* Botones */}
-        <div className="flex justify-end gap-3">
+        {/* Botones: en mobile, apilados con la acción principal arriba */}
+        <div className="flex flex-col-reverse gap-3 md:flex-row md:justify-end">
           <button
             onClick={onCancel}
-            className="px-4 py-2 rounded-lg text-text-secondary font-medium border border-divider hover:bg-hover transition cursor-pointer"
+            className="cursor-pointer w-full md:w-auto px-4 py-3 md:py-2 rounded-xl md:rounded-lg text-text-secondary font-medium border border-divider hover:bg-hover transition"
           >
             Cancelar
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition cursor-pointer"
+            className="cursor-pointer w-full md:w-auto px-4 py-3 md:py-2 rounded-xl md:rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition"
           >
             Confirmar
           </button>

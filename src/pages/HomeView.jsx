@@ -43,7 +43,7 @@ export default function HomeView() {
           </span>
           <div className="min-w-0">
             <h1 className="text-xl md:text-2xl font-extrabold text-text tracking-tight truncate">
-              ¡Hola{firstName ? "," : "!"}{" "}
+              ¡Hola! {" "}
               {firstName && (
                 <span className="text-emerald-600 dark:text-emerald-400">{firstName}</span>
               )}

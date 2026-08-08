@@ -1,5 +1,5 @@
 import { useState, forwardRef, useEffect } from "react";
-import { Calendar } from "lucide-react";
+import { Calendar, ChevronDown } from "lucide-react";
 import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "../../styles/DateInput.css";
@@ -8,13 +8,14 @@ import es from 'date-fns/locale/es';
 // Registrar el idioma español
 registerLocale('es', es);
 
-export default function DateInput({ 
-  value, 
-  onChange, 
-  onBlur, 
-  error, 
+export default function DateInput({
+  value,
+  onChange,
+  onBlur,
+  error,
   label = "Fecha",
-  name = "date"
+  name = "date",
+  variant = "default"
 }) {
   // Convertir el valor string a objeto Date
   const parseDate = (dateString) => {
@@ -66,8 +67,16 @@ export default function DateInput({
   // Formatear la fecha para mostrarla de manera amigable
   const formatDisplayDate = (date) => {
     if (!date) return "";
-    
+
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString('es-ES', options);
+  };
+
+  // Variante "pill": incluye el día de la semana (ej: "viernes, 7 de agosto de 2026")
+  const formatDisplayDatePill = (date) => {
+    if (!date) return "";
+
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     return date.toLocaleDateString('es-ES', options);
   };
   
@@ -114,6 +123,43 @@ export default function DateInput({
   ));
   
   CustomInput.displayName = "CustomDateInput";
+
+  const PillInput = forwardRef(({ onClick }, ref) => (
+    <div
+      onClick={onClick}
+      ref={ref}
+      className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-alt border border-divider text-sm text-text cursor-pointer hover:bg-hover transition"
+    >
+      <Calendar size={14} className="text-text-tertiary shrink-0" />
+      <span>{selectedDate ? formatDisplayDatePill(selectedDate) : "Selecciona una fecha"}</span>
+      <ChevronDown size={14} className="text-text-tertiary shrink-0" />
+    </div>
+  ));
+
+  PillInput.displayName = "PillDateInput";
+
+  if (variant === "pill") {
+    return (
+      <div className="flex justify-center">
+        <DatePicker
+          selected={selectedDate}
+          onChange={handleDateChange}
+          onCalendarOpen={() => setIsOpen(true)}
+          onCalendarClose={() => setIsOpen(false)}
+          customInput={<PillInput />}
+          dateFormat="dd/MM/yyyy"
+          locale="es"
+          showPopperArrow={false}
+          popperClassName="date-picker-popper"
+          popperPlacement="bottom"
+          calendarClassName="rounded-lg border border-divider shadow-lg"
+          todayButton="Hoy"
+          placeholderText="Selecciona una fecha"
+        />
+        <input type="hidden" name={name} value={value || ""} readOnly />
+      </div>
+    );
+  }
 
   return (
     <div className="relative">

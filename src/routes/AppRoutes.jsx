@@ -11,6 +11,7 @@ import SelectEntryView from "../pages/entry/SelectEntryView";
 import NotFoundView from "../pages/NotFoundView";
 import LoginView from "../pages/LoginView";
 import CategoriesView from "../pages/categories/CategoriesView";
+import NewCategoryView from "../pages/categories/NewCategoryView";
 import EditCategoryView from "../pages/categories/EditCategoryView";
 import SelectCategoryView from "../pages/categories/SelectCategoryView";
 import ConfigurationView from "../pages/ConfigurationView";
@@ -60,6 +61,10 @@ export default function AppRoutes() {
       <Route
         path="/categories"
         element={user ? <CategoriesView /> : <Navigate to="/" replace />}
+      />
+      <Route
+        path="/new-category"
+        element={user ? <NewCategoryView /> : <Navigate to="/" replace />}
       />
       <Route
         path="/select-category"

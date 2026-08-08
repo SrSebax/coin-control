@@ -17,7 +17,8 @@ export default function AmountInput({
   currencySymbol = "$",
   showCurrency = true,
   maxValue,
-  minValue
+  minValue,
+  variant = "default"
 }) {
   const [amountFormatted, setAmountFormatted] = useState("");
 
@@ -45,6 +46,33 @@ export default function AmountInput({
   useEffect(() => {
     if (value) setAmountFormatted(formatToCurrency(value));
   }, [value, locale, formatToCurrency]);
+
+  if (variant === "hero") {
+    return (
+      <div className={className}>
+        <div className="flex items-center justify-center gap-2">
+          {currencySymbol && (
+            <span className="text-3xl font-bold text-emerald-500 dark:text-emerald-400">
+              {currencySymbol}
+            </span>
+          )}
+          <input
+            type="text"
+            inputMode="numeric"
+            name={name}
+            value={amountFormatted}
+            onChange={handleAmountChange}
+            onBlur={onBlur}
+            placeholder={placeholder}
+            autoFocus={autoFocus}
+            size={Math.max((amountFormatted || placeholder).length, 1)}
+            className="bg-transparent border-none outline-none text-5xl font-semibold text-text placeholder-text-muted/50 text-left min-w-[1ch]"
+          />
+        </div>
+        {error && <p className="mt-2 text-xs text-red-500 text-center">{error}</p>}
+      </div>
+    );
+  }
 
   return (
     <div className={className}>

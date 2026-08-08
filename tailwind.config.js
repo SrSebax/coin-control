@@ -7,6 +7,7 @@ export default {
         "fade-in": "fadeIn 1s ease-out forwards",
         "fade-out": "fadeOut 0.5s ease-in forwards",
         "loading-bar": "loadingBar 1.5s linear infinite",
+        "slide-up": "slideUp 0.25s ease-out forwards",
       },
       keyframes: {
         fadeIn: {
@@ -20,6 +21,10 @@ export default {
         loadingBar: {
           "0%": { left: "-50%" },
           "100%": { left: "100%" },
+        },
+        slideUp: {
+          "0%": { transform: "translateY(100%)" },
+          "100%": { transform: "translateY(0)" },
         },
       },
     },

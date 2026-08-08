@@ -13,9 +13,6 @@ import LoginView from "../pages/LoginView";
 import CategoriesView from "../pages/categories/CategoriesView";
 import EditCategoryView from "../pages/categories/EditCategoryView";
 import SelectCategoryView from "../pages/categories/SelectCategoryView";
-import PocketsView from "../pages/pocket/PocketsView";
-import EditPocketView from "../pages/pocket/EditPocketView";
-import SelectPocketView from "../pages/pocket/SelectPocketView";
 import ConfigurationView from "../pages/ConfigurationView";
 
 export default function AppRoutes() {
@@ -81,20 +78,6 @@ export default function AppRoutes() {
         element={user ? <EditEntryView /> : <Navigate to="/" replace />}
       />
 
-      {/* Rutas de Bolsillos */}
-      <Route
-        path="/pockets"
-        element={user ? <PocketsView /> : <Navigate to="/" replace />}
-      />
-      <Route
-        path="/select-pocket"
-        element={user ? <SelectPocketView /> : <Navigate to="/" replace />}
-      />
-      <Route
-        path="/edit-pocket/:pocketId"
-        element={user ? <EditPocketView /> : <Navigate to="/" replace />}
-      />
-      
       {/* Ruta de Configuración */}
       <Route
         path="/settings"

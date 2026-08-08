@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import { Pencil, Check, X } from "lucide-react";
 import { useBudget } from "../hooks/useBudget";
+import { useHiddenBalances } from "../hooks/useHiddenBalances";
 
 const formatCurrency = (value) =>
   `$${Number(value || 0).toLocaleString("es-CO", { minimumFractionDigits: 0 })}`;
 
 export default function BudgetCard({ spent }) {
   const { amount, setBudgetAmount } = useBudget();
+  const { hidden } = useHiddenBalances();
+  const mask = (value) => (hidden ? "••••••" : formatCurrency(value));
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(amount ?? "");
 
@@ -71,8 +74,8 @@ export default function BudgetCard({ spent }) {
         <>
           <p className="text-sm text-text-secondary mb-2">
             Has gastado{" "}
-            <span className="font-semibold text-text">{formatCurrency(spent)}</span> de{" "}
-            {formatCurrency(amount)}
+            <span className="font-semibold text-text">{mask(spent)}</span> de{" "}
+            {mask(amount)}
           </p>
           <div className="w-full h-2.5 rounded-full bg-hover overflow-hidden">
             <div
@@ -90,8 +93,8 @@ export default function BudgetCard({ spent }) {
             }`}
           >
             {overBudget
-              ? `Te pasaste por ${formatCurrency(Math.abs(remaining))}`
-              : `Te quedan ${formatCurrency(remaining)} para gastar`}
+              ? `Te pasaste por ${mask(Math.abs(remaining))}`
+              : `Te quedan ${mask(remaining)} para gastar`}
           </p>
         </>
       ) : (

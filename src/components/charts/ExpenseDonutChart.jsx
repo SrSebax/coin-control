@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { PieChart as PieChartIcon } from "lucide-react";
+import { useHiddenBalances } from "../../hooks/useHiddenBalances";
 import ChartTooltip from "./ChartTooltip";
 
 const FALLBACK_COLORS = [
@@ -12,6 +13,8 @@ const formatCurrency = (value) =>
   `$${Number(value || 0).toLocaleString("es-CO", { minimumFractionDigits: 0 })}`;
 
 export default function ExpenseDonutChart({ transactions, categories }) {
+  const { hidden } = useHiddenBalances();
+  const mask = (value) => (hidden ? "••••••" : formatCurrency(value));
   const data = useMemo(() => {
     const totals = new Map();
 
@@ -75,7 +78,7 @@ export default function ExpenseDonutChart({ transactions, categories }) {
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <span className="text-xs text-text-tertiary">Total</span>
           <span className="text-lg font-bold text-text">
-            {formatCurrency(total)}
+            {mask(total)}
           </span>
         </div>
       </div>
@@ -92,7 +95,7 @@ export default function ExpenseDonutChart({ transactions, categories }) {
             </div>
             <div className="flex items-center gap-2 shrink-0 ml-2">
               <span className="font-medium text-text">
-                {formatCurrency(item.value)}
+                {mask(item.value)}
               </span>
               <span className="text-xs text-text-muted w-10 text-right">
                 {total > 0 ? Math.round((item.value / total) * 100) : 0}%

@@ -1,74 +1,94 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import * as LucideIcons from "lucide-react";
 import Layout from "../../components/Layout";
-import TabsSwitcher from "../../components/TabsSwitcher";
-import PageHeading from "../../components/PageHeading";
-import SubmitButton from "../../components/SubmitButton";
 import AmountInput from "../../components/inputs/AmountInput";
 import NameInput from "../../components/inputs/NameInput";
 import SelectInput from "../../components/inputs/SelectInput";
 import DateInput from "../../components/inputs/DateInput";
 import NoteTextarea from "../../components/inputs/NoteTextarea";
 import ConfirmModal from "../../components/ConfirmModal";
-import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
+import MovementRow from "../../components/MovementRow";
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Eye,
+  Pencil,
+  Save,
+  X,
+  Loader2,
+  Zap,
+  RefreshCw,
+  History,
+} from "lucide-react";
 import { useTransactions } from "../../hooks/useLocalStorage";
 import { useCategories } from "../../hooks/useCategories";
+import { parseLocalDate } from "../../utils/date";
+
+const formatCurrency = (value) => {
+  const n = Number(value || 0);
+  return `$${n.toLocaleString("es-CO", { minimumFractionDigits: 2 })}`;
+};
+
+const formatChipDate = (dateString) => {
+  if (!dateString) return null;
+  const date = parseLocalDate(dateString);
+  return date.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" });
+};
+
+const formatRelativeDate = (dateString) => {
+  const date = parseLocalDate(dateString);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (date.toDateString() === today.toDateString()) return "Hoy";
+  if (date.toDateString() === yesterday.toDateString()) return "Ayer";
+  return date.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+};
 
 export default function NewEntryView() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addTransaction, updateTransaction } = useTransactions();
+  const { transactions, addTransaction, updateTransaction } = useTransactions();
   const { getCategoriesByType } = useCategories();
-  
-  // Verificar si estamos editando una transacción existente
+  const formCardRef = useRef(null);
+
   const isEditing = location.state?.isEditing || false;
   const existingTransaction = location.state?.transaction || null;
-  
-  // Determinar el tipo basado en el estado de navegación o el tab activo
+
   const [activeTab, setActiveTab] = useState(() => {
-    if (location.state?.type === 'expense') return "gastos";
-    if (location.state?.type === 'income') return "ingresos";
+    if (location.state?.type === "expense") return "gastos";
+    if (location.state?.type === "income") return "ingresos";
     return "gastos";
   });
-  
+
   const isExpense = activeTab === "gastos";
-  
-  // Manejador personalizado para cambiar el tipo de transacción
+
   const handleTabChange = (newTab) => {
     setActiveTab(newTab);
-    // Limpiar la categoría seleccionada al cambiar de tipo de transacción
-    setFormData(prev => ({
-      ...prev,
-      category: ""
-    }));
+    setFormData((prev) => ({ ...prev, category: "" }));
   };
-  
-  // Estado para el modal de confirmación
+
   const [confirmModal, setConfirmModal] = useState({
     open: false,
     title: "",
     message: "",
-    data: null
+    data: null,
   });
 
-  // Inicializar el formulario con datos existentes si estamos editando
   const [formData, setFormData] = useState(() => {
     if (existingTransaction) {
       return {
         amount: existingTransaction.amount.toString(),
         name: existingTransaction.name || "",
         category: existingTransaction.category || "",
-        date: existingTransaction.date.split('T')[0] || "",
+        date: existingTransaction.date.split("T")[0] || "",
         note: existingTransaction.note || "",
       };
     }
-    return {
-      amount: "",
-      name: "",
-      category: "",
-      date: "",
-      note: "",
-    };
+    return { amount: "", name: "", category: "", date: "", note: "" };
   });
 
   const [touched, setTouched] = useState({});
@@ -87,69 +107,65 @@ export default function NewEntryView() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFormValid) return;
-    
+
     const transaction = {
-      type: isExpense ? 'expense' : 'income',
+      type: isExpense ? "expense" : "income",
       amount: parseFloat(formData.amount),
       name: formData.name.trim(),
       category: formData.category,
       date: formData.date,
-      note: formData.note.trim() || null
+      note: formData.note.trim() || null,
     };
-    
-    // Mostrar modal de confirmación
+
     setConfirmModal({
       open: true,
       title: isEditing ? "¿Actualizar movimiento?" : "¿Guardar movimiento?",
-      message: isEditing 
+      message: isEditing
         ? "¿Estás seguro de actualizar este movimiento?"
         : "¿Estás seguro de guardar este movimiento?",
-      data: transaction
+      data: transaction,
     });
   };
-  
+
   const handleConfirmSubmit = async () => {
     setIsSubmitting(true);
-    
+
     try {
       if (isEditing && existingTransaction) {
-        // Actualizar transacción existente
         updateTransaction(existingTransaction.id, confirmModal.data);
-        
-        navigate('/', { 
-          state: { 
-            message: `${isExpense ? 'Gasto' : 'Ingreso'} actualizado exitosamente`,
-            type: 'success'
-          }
+        navigate("/", {
+          state: {
+            message: `${isExpense ? "Gasto" : "Ingreso"} actualizado exitosamente`,
+            type: "success",
+          },
         });
       } else {
-        // Crear nueva transacción
         addTransaction(confirmModal.data);
-        
-        navigate('/', { 
-          state: { 
-            message: `${isExpense ? 'Gasto' : 'Ingreso'} registrado exitosamente`,
-            type: 'success'
-          }
+        navigate("/", {
+          state: {
+            message: `${isExpense ? "Gasto" : "Ingreso"} registrado exitosamente`,
+            type: "success",
+          },
         });
       }
     } catch (error) {
-      console.error('Error al guardar la transacción:', error);
-      // Aquí podrías mostrar un mensaje de error
+      console.error("Error al guardar la transacción:", error);
     } finally {
       setIsSubmitting(false);
       setConfirmModal({ open: false, title: "", message: "", data: null });
     }
   };
-  
+
   const handleCancelSubmit = () => {
     setConfirmModal({ open: false, title: "", message: "", data: null });
   };
-  
-  // Función para manejar la adición de una nueva categoría
-  const handleAddNewCategory = () => {
-    // Navegar a la página de categorías
-    navigate('/categories');
+
+  const handleCancel = () => navigate(-1);
+
+  const handleAddNewCategory = () => navigate("/categories");
+
+  const handleFocusName = () => {
+    formCardRef.current?.querySelector('input[name="name"]')?.focus();
   };
 
   useEffect(() => {
@@ -158,54 +174,146 @@ export default function NewEntryView() {
       const yyyy = today.getFullYear();
       const mm = String(today.getMonth() + 1).padStart(2, "0");
       const dd = String(today.getDate()).padStart(2, "0");
-      const localDate = `${yyyy}-${mm}-${dd}`;
-      handleChange({ target: { name: "date", value: localDate } });
+      handleChange({ target: { name: "date", value: `${yyyy}-${mm}-${dd}` } });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.date]);
 
-  // Obtener las categorías según el tipo seleccionado
-  const categorias = getCategoriesByType(isExpense ? 'expense' : 'income');
+  const categorias = getCategoriesByType(isExpense ? "expense" : "income");
+  const selectedCategory = categorias.find((c) => c.id === formData.category) || null;
+  const SelectedCategoryIcon = selectedCategory?.icon ? LucideIcons[selectedCategory.icon] : null;
+
+  // Datos para "Movimientos recientes" y "Repetir movimiento"
+  const expenseCategories = getCategoriesByType("expense");
+  const incomeCategories = getCategoriesByType("income");
+  const getCategoryFor = (t) =>
+    (t.type === "expense" ? expenseCategories : incomeCategories).find((c) => c.id === t.category) ||
+    null;
+
+  const sortedTransactions = [...transactions].sort(
+    (a, b) => parseLocalDate(b.date) - parseLocalDate(a.date)
+  );
+  const recentTransactions = sortedTransactions.slice(0, 4);
+  const lastTransaction = sortedTransactions[0] || null;
+
+  const handleRepeatLast = () => {
+    if (!lastTransaction) return;
+    setActiveTab(lastTransaction.type === "expense" ? "gastos" : "ingresos");
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    setFormData({
+      amount: lastTransaction.amount.toString(),
+      name: lastTransaction.name || "",
+      category: lastTransaction.category || "",
+      date: `${yyyy}-${mm}-${dd}`,
+      note: lastTransaction.note || "",
+    });
+  };
+
+  const pageTitle = isEditing ? "Editar movimiento" : "Registrar movimiento";
+  const pageSubtitle = isEditing
+    ? "Actualiza los datos de tu movimiento"
+    : "Agrega tus ingresos o gastos fácilmente";
 
   return (
-    <Layout>
-      <form onSubmit={handleSubmit} className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
-        <div className="text-center sm:text-left">
-          <PageHeading title={isEditing ? "Editar movimiento" : "Registrar nuevo movimiento"} />
-          <TabsSwitcher activeTab={activeTab} setActiveTab={handleTabChange} />
-        </div>
+    <Layout title={pageTitle} subtitle={pageSubtitle}>
+      {/* En mobile el header no muestra el título; va aquí, igual que en Inicio */}
+      <div className="md:hidden mb-5">
+        <h1 className="text-lg font-bold text-text">{pageTitle}</h1>
+        <p className="text-xs text-text-tertiary">{pageSubtitle}</p>
+      </div>
 
-        <div className="space-y-6">
-          {/* Agrupar Monto y Nombre */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-6 items-start">
+        {/* Formulario */}
+        <form
+          ref={formCardRef}
+          onSubmit={handleSubmit}
+          className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6"
+        >
+          {/* Tipo de movimiento */}
+          <div>
+            <label className="block text-sm font-semibold text-text-secondary mb-2 tracking-wide">
+              Tipo de movimiento
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => handleTabChange("gastos")}
+                className={`cursor-pointer text-left rounded-xl border-2 p-4 transition-colors ${
+                  isExpense
+                    ? "border-rose-400 bg-rose-50 dark:bg-rose-950/30"
+                    : "border-divider bg-surface hover:bg-surface-alt"
+                }`}
+              >
+                <span
+                  className={`inline-flex p-2 rounded-full mb-2 ${
+                    isExpense ? "bg-rose-500/15 text-rose-600 dark:text-rose-400" : "bg-surface-alt text-text-tertiary"
+                  }`}
+                >
+                  <ArrowDownCircle size={20} />
+                </span>
+                <p className={`font-semibold ${isExpense ? "text-rose-600 dark:text-rose-400" : "text-text"}`}>
+                  Gasto
+                </p>
+                <p className="text-xs text-text-tertiary">Dinero que sale</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange("ingresos")}
+                className={`cursor-pointer text-left rounded-xl border-2 p-4 transition-colors ${
+                  !isExpense
+                    ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-950/30"
+                    : "border-divider bg-surface hover:bg-surface-alt"
+                }`}
+              >
+                <span
+                  className={`inline-flex p-2 rounded-full mb-2 ${
+                    !isExpense ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-surface-alt text-text-tertiary"
+                  }`}
+                >
+                  <ArrowUpCircle size={20} />
+                </span>
+                <p className={`font-semibold ${!isExpense ? "text-emerald-600 dark:text-emerald-400" : "text-text"}`}>
+                  Ingreso
+                </p>
+                <p className="text-xs text-text-tertiary">Dinero que entra</p>
+              </button>
+            </div>
+          </div>
+
+          <SelectInput
+            options={categorias}
+            value={formData.category}
+            onChange={handleChange}
+            onBlur={() => setTouched((prev) => ({ ...prev, category: true }))}
+            error={isEmpty("category")}
+            label="Categoría"
+            name="category"
+            placeholder="Selecciona una categoría"
+            onAddNew={() => handleAddNewCategory()}
+            addNewLabel="Agregar categoría"
+            isObjectOptions={true}
+          />
+
+          <NameInput
+            value={formData.name}
+            onChange={handleChange}
+            onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
+            error={isEmpty("name")}
+            label="Descripción *"
+            placeholder="Ej: Compra supermercado"
+            maxLength={100}
+          />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <AmountInput
               value={formData.amount}
               onChange={handleChange}
               onBlur={() => setTouched((prev) => ({ ...prev, amount: true }))}
               error={isEmpty("amount")}
-            />
-            
-            <NameInput
-              value={formData.name}
-              onChange={handleChange}
-              onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
-              error={isEmpty("name")}
-            />
-          </div>
-
-          {/* Agrupar Categoría y Fecha */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <SelectInput
-              options={categorias}
-              value={formData.category}
-              onChange={handleChange}
-              onBlur={() => setTouched((prev) => ({ ...prev, category: true }))}
-              error={isEmpty("category")}
-              label="Categoría"
-              name="category"
-              placeholder="Selecciona una categoría"
-              onAddNew={() => handleAddNewCategory()}
-              addNewLabel="Agregar categoría"
-              isObjectOptions={true}
             />
 
             <DateInput
@@ -218,27 +326,158 @@ export default function NewEntryView() {
             />
           </div>
 
-          <NoteTextarea value={formData.note} onChange={handleChange} />
+          <NoteTextarea value={formData.note} onChange={handleChange} className="" maxLength={200} />
 
-          <SubmitButton
-            label={isEditing 
-              ? (isExpense ? "Actualizar gasto" : "Actualizar ingreso")
-              : (isExpense ? "Guardar gasto" : "Guardar ingreso")
-            }
-            Icon={isExpense ? ArrowDownCircle : ArrowUpCircle}
-            color={
-              isExpense
-                ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
-                : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
-            }
-            text="text-white"
-            disabled={!isFormValid || isSubmitting}
-            loading={isSubmitting}
-          />
+          <div className="flex gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={!isFormValid || isSubmitting}
+              className={`cursor-pointer flex-1 inline-flex items-center justify-center gap-2 py-3 px-5 rounded-2xl font-semibold text-sm text-white shadow hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                isExpense
+                  ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
+                  : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
+              }`}
+            >
+              {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+              {isSubmitting
+                ? "Guardando..."
+                : isEditing
+                ? "Actualizar movimiento"
+                : "Guardar movimiento"}
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              className="cursor-pointer inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl font-semibold text-sm text-text-secondary bg-hover border border-divider hover:bg-active transition"
+            >
+              <X size={18} /> Cancelar
+            </button>
+          </div>
+        </form>
+
+        {/* Panel lateral */}
+        <div className="space-y-5">
+          {/* Vista previa */}
+          <div className="bg-surface rounded-2xl shadow-md border border-divider p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Eye size={18} className="text-emerald-600 dark:text-emerald-400" />
+                <h3 className="font-semibold text-text">Vista previa</h3>
+              </div>
+              <button
+                type="button"
+                onClick={handleFocusName}
+                className="cursor-pointer inline-flex items-center gap-1.5 text-xs font-medium text-text-secondary bg-hover hover:bg-active px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <Pencil size={12} /> Editar después
+              </button>
+            </div>
+
+            <div
+              className={`rounded-xl border p-4 ${
+                isExpense
+                  ? "bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/40"
+                  : "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900/40"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span
+                    className="p-2.5 rounded-full shrink-0"
+                    style={{
+                      backgroundColor: `${selectedCategory?.color || (isExpense ? "#ef4444" : "#10b981")}20`,
+                    }}
+                  >
+                    {SelectedCategoryIcon ? (
+                      <SelectedCategoryIcon size={20} style={{ color: selectedCategory.color }} />
+                    ) : isExpense ? (
+                      <ArrowDownCircle size={20} className="text-rose-500" />
+                    ) : (
+                      <ArrowUpCircle size={20} className="text-emerald-500" />
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-xs text-text-tertiary truncate">
+                      {isExpense ? "Gasto" : "Ingreso"}
+                      {selectedCategory ? ` en ${selectedCategory.name}` : ""}
+                    </p>
+                    <p className="font-semibold text-text truncate">
+                      {formData.name || "Sin descripción"}
+                    </p>
+                  </div>
+                </div>
+                <p
+                  className={`font-bold shrink-0 ${
+                    isExpense ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
+                  }`}
+                >
+                  {isExpense ? "-" : "+"}
+                  {formData.amount ? formatCurrency(formData.amount) : "$0,00"}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 mt-3">
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-secondary bg-surface/70 px-2.5 py-1 rounded-lg">
+                  <LucideIcons.Calendar size={12} />
+                  {formatChipDate(formData.date) || "Sin fecha"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Acciones rápidas */}
+          <div className="bg-surface rounded-2xl shadow-md border border-divider p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Zap size={18} className="text-emerald-600 dark:text-emerald-400" />
+              <h3 className="font-semibold text-text">Acciones rápidas</h3>
+            </div>
+            <button
+              type="button"
+              onClick={handleRepeatLast}
+              disabled={!lastTransaction}
+              className="cursor-pointer w-full text-left rounded-xl border border-divider p-4 hover:bg-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between gap-3"
+            >
+              <div>
+                <p className="text-sm font-semibold text-text">Repetir movimiento</p>
+                <p className="text-xs text-text-tertiary">Crea un movimiento similar al último registrado</p>
+              </div>
+              <RefreshCw size={18} className="text-text-tertiary shrink-0" />
+            </button>
+          </div>
+
+          {/* Movimientos recientes */}
+          <div className="bg-surface rounded-2xl shadow-md border border-divider p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <History size={18} className="text-emerald-600 dark:text-emerald-400" />
+                <h3 className="font-semibold text-text">Movimientos recientes</h3>
+              </div>
+              <Link
+                to="/select-entry"
+                className="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline"
+              >
+                Ver todos
+              </Link>
+            </div>
+
+            {recentTransactions.length === 0 ? (
+              <p className="text-sm text-text-tertiary text-center py-4">Sin movimientos registrados.</p>
+            ) : (
+              <div className="space-y-1">
+                {recentTransactions.map((t) => (
+                  <MovementRow
+                    key={t.id}
+                    transaction={t}
+                    category={getCategoryFor(t)}
+                    dateLabel={formatRelativeDate(t.date)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </form>
-      
-      {/* Modal de confirmación */}
+      </div>
+
       <ConfirmModal
         open={confirmModal.open}
         title={confirmModal.title}

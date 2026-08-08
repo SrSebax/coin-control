@@ -40,6 +40,9 @@ export default function NoteTextarea({
           resize ? "resize" : "resize-none"
         }`}
       />
+      {maxLength && (
+        <p className="mt-1 text-xs text-text-muted text-right">{(value || "").length}/{maxLength}</p>
+      )}
       {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
     </div>
   );

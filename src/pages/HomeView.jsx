@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import Layout from "../components/Layout";
+import MobileHomeCards from "../components/MobileHomeCards";
 import BalanceHero from "../components/BalanceHero";
 import StatCard from "../components/StatCard";
 import BudgetCard from "../components/BudgetCard";
@@ -18,14 +19,8 @@ export default function HomeView() {
   const { displayName } = useCurrentUser();
   const { monthIncome, monthExpense, incomeDelta, expenseDelta } = useMonthlyStats();
 
-  const greeting = displayName ? (
-    <>
-      Bienvenido de vuelta,{" "}
-      <span className="text-emerald-600 dark:text-emerald-400">{displayName}</span> 👋
-    </>
-  ) : (
-    "Bienvenido de vuelta 👋"
-  );
+  const firstName = displayName ? displayName.split(" ")[0] : "";
+  const initial = firstName ? firstName[0].toUpperCase() : "👋";
 
   useEffect(() => {
     if (location.state?.message) {
@@ -35,19 +30,36 @@ export default function HomeView() {
   }, [location.state]);
 
   return (
-    <Layout title={greeting} subtitle="Este es el resumen de tus finanzas">
+    <Layout>
       {toast && (
         <ToastMessage message={toast.message} type={toast.type} onClose={() => setToast(null)} />
       )}
 
       <div className="space-y-5">
-        {/* En mobile el header no muestra el saludo (no le cabe bien); va aquí */}
-        <div className="md:hidden">
-          <h1 className="text-lg font-bold text-text">{greeting}</h1>
-          <p className="text-xs text-text-tertiary">Este es el resumen de tus finanzas</p>
+        {/* Saludo: mismo diseño en mobile y desktop, ya no vive en el navbar */}
+        <div className="flex items-center gap-3 px-1">
+          <span className="shrink-0 w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-lg font-bold shadow-md">
+            {initial}
+          </span>
+          <div className="min-w-0">
+            <h1 className="text-xl md:text-2xl font-extrabold text-text tracking-tight truncate">
+              ¡Hola{firstName ? "," : "!"}{" "}
+              {firstName && (
+                <span className="text-emerald-600 dark:text-emerald-400">{firstName}</span>
+              )}
+            </h1>
+            <p className="text-sm text-text-tertiary mt-0.5 truncate">Este es el resumen de tus finanzas</p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr_1fr] gap-5">
+        <MobileHomeCards />
+
+        <div className="md:hidden space-y-5">
+          <CategoryBreakdownCard />
+          <BudgetCard spent={monthExpense} />
+        </div>
+
+        <div className="hidden md:grid grid-cols-1 lg:grid-cols-[1.6fr_1fr_1fr] gap-5">
           <BalanceHero />
 
           <StatCard
@@ -67,7 +79,7 @@ export default function HomeView() {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 items-start">
+        <div className="hidden md:grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5 items-start">
           <RecentMovementsCard />
 
           <div className="space-y-5">

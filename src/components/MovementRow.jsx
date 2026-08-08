@@ -1,9 +1,11 @@
 import * as LucideIcons from "lucide-react";
+import { useHiddenBalances } from "../hooks/useHiddenBalances";
 
 const formatCurrency = (value) =>
   `$${Number(value || 0).toLocaleString("es-CO", { minimumFractionDigits: 2 })}`;
 
 export default function MovementRow({ transaction, category, dateLabel }) {
+  const { hidden } = useHiddenBalances();
   const isExpense = transaction.type === "expense";
   const IconComponent =
     (category?.icon && LucideIcons[category.icon]) ||
@@ -27,7 +29,7 @@ export default function MovementRow({ transaction, category, dateLabel }) {
           }`}
         >
           {isExpense ? "-" : "+"}
-          {formatCurrency(transaction.amount)}
+          {hidden ? "••••••" : formatCurrency(transaction.amount)}
         </p>
       </div>
     </div>

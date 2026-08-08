@@ -1,22 +1,20 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  X,
   Edit,
   ChevronDown,
   ChevronRight,
   ChevronsRight,
-  PiggyBank,
-  Plus,
 } from "lucide-react";
 import { itemsRoutes } from "../routes/itemsRoutes";
 import { useCurrentUser } from "../hooks/useCurrentUser";
-import logoIcon from "../assets/favicon.svg";
+import { useTheme } from "../hooks/useTheme";
+import logoIconDark from "../assets/favicon-dark.svg";
+import logoIconLight from "../assets/favicon-light.svg";
 import logoFull from "../assets/coin-control-dark.svg";
 
 const EXPANDABLE = {
   "/categories": { key: "categories", editPath: "/select-category", editLabel: "Editar categoría", matchEdit: "/edit-category/" },
-  "/pockets": { key: "pockets", editPath: "/select-pocket", editLabel: "Editar bolsillo", matchEdit: "/edit-pocket/" },
   "/new-entry": { key: "entries", editPath: "/select-entry", editLabel: "Editar movimiento", matchEdit: "/edit-entry/" },
 };
 
@@ -25,12 +23,12 @@ function getInitials(name) {
   return name.split(" ").map((w) => w.charAt(0)).join("").toUpperCase().substring(0, 2);
 }
 
-export default function Sidebar({ collapsed, mobileOpen, setMobileOpen }) {
+export default function Sidebar({ collapsed }) {
   const { pathname } = useLocation();
   const { user, displayName } = useCurrentUser();
+  const { isDark } = useTheme();
   const [expandedItems, setExpandedItems] = useState({
     categories: pathname.includes("/categories") || pathname.includes("/select-category") || pathname.includes("/edit-category"),
-    pockets: pathname.includes("/pockets") || pathname.includes("/select-pocket") || pathname.includes("/edit-pocket"),
     entries: pathname.includes("/new-entry") || pathname.includes("/select-entry") || pathname.includes("/edit-entry"),
   });
 
@@ -40,31 +38,27 @@ export default function Sidebar({ collapsed, mobileOpen, setMobileOpen }) {
   };
 
   const widthClass = collapsed ? "w-16" : "w-64";
-  const translateClass = mobileOpen ? "translate-x-0" : "-translate-x-full";
 
   const activeClasses = "bg-gradient-to-r from-emerald-600/50 to-emerald-600/10 text-white";
   const inactiveClasses = "text-white/65 hover:bg-white/5 hover:text-white";
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 bg-gradient-to-b from-[#0b1a15] to-[#081310] border-r border-white/5 transition-all duration-300 ease-in-out h-screen flex flex-col shadow-lg ${widthClass} ${translateClass} md:translate-x-0 md:static`}
+      className={`hidden md:flex bg-gradient-to-b from-[#0b1a15] to-[#081310] border-r border-white/5 transition-all duration-300 ease-in-out h-screen flex-col shadow-lg ${widthClass}`}
     >
       {/* Cabecera */}
-      <div className="flex items-center justify-between px-4 py-4 shrink-0">
+      <div className="flex items-center px-4 py-4 shrink-0">
         <Link to="/home" className="flex items-center gap-2.5 min-w-0" aria-label="Inicio">
           {collapsed ? (
-            <img src={logoIcon} alt="CoinControl" className="w-11 h-11 rounded-full shrink-0" />
+            <img
+              src={isDark ? logoIconDark : logoIconLight}
+              alt="CoinControl"
+              className="w-11 h-11 rounded-full shrink-0"
+            />
           ) : (
             <img src={logoFull} alt="CoinControl" className="h-11 w-auto" />
           )}
         </Link>
-        <button
-          className="md:hidden text-white/60 hover:text-white transition"
-          onClick={() => setMobileOpen(false)}
-          aria-label="Cerrar menú"
-        >
-          <X size={22} />
-        </button>
       </div>
 
       {/* Navegación */}
@@ -87,7 +81,6 @@ export default function Sidebar({ collapsed, mobileOpen, setMobileOpen }) {
                   <Link
                     to={path}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium flex-grow"
-                    onClick={() => setMobileOpen(false)}
                   >
                     {icon}
                     {!collapsed && <span>{label}</span>}
@@ -108,7 +101,6 @@ export default function Sidebar({ collapsed, mobileOpen, setMobileOpen }) {
                     className={`flex items-center gap-3 px-3 py-2 ml-4 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isEditActive ? activeClasses : "text-white/50 hover:bg-white/5 hover:text-white"
                     }`}
-                    onClick={() => setMobileOpen(false)}
                   >
                     <Edit size={16} />
                     <span>{expandable.editLabel}</span>
@@ -125,7 +117,6 @@ export default function Sidebar({ collapsed, mobileOpen, setMobileOpen }) {
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                 pathname === path ? activeClasses : inactiveClasses
               }`}
-              onClick={() => setMobileOpen(false)}
             >
               {icon}
               {!collapsed && <span>{label}</span>}
@@ -134,29 +125,10 @@ export default function Sidebar({ collapsed, mobileOpen, setMobileOpen }) {
         })}
       </nav>
 
-      {/* CTA: planifica tu futuro */}
-      {!collapsed && (
-        <div className="mx-3 mb-3 p-4 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-800 relative overflow-hidden shrink-0">
-          <PiggyBank className="absolute -bottom-3 -right-3 w-20 h-20 text-white/10" />
-          <p className="relative text-sm font-semibold text-white mb-1">Planifica tu futuro</p>
-          <p className="relative text-xs text-white/75 mb-3 leading-snug">
-            Crea bolsillos y toma el control de tus finanzas.
-          </p>
-          <Link
-            to="/pockets"
-            onClick={() => setMobileOpen(false)}
-            className="relative inline-flex items-center gap-1.5 text-xs font-semibold bg-white text-emerald-700 px-3 py-1.5 rounded-lg hover:bg-white/90 transition"
-          >
-            <Plus size={14} /> Crear bolsillo
-          </Link>
-        </div>
-      )}
-
       {/* Usuario + créditos */}
       <div className="shrink-0 border-t border-white/5 px-2 py-2">
         <Link
           to="/settings"
-          onClick={() => setMobileOpen(false)}
           className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/5 transition"
         >
           <span className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white text-sm font-bold shrink-0">

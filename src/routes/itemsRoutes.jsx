@@ -4,7 +4,6 @@ import {
   Settings,
   FolderKanban,
   PlusCircle,
-  Wallet,
   Edit,
 } from "lucide-react";
 
@@ -19,11 +18,6 @@ export const itemsRoutes = [
     path: "/categories",
     label: "Categorías",
     icon: <FolderKanban size={20} />,
-  },
-  {
-    path: "/pockets",
-    label: "Bolsillos",
-    icon: <Wallet size={20} />,
   },
   { path: "/settings", label: "Configuración", icon: <Settings size={20} /> },
 ];

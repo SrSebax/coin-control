@@ -39,6 +39,9 @@ export default function NameInput({
           error ? "border-red-400" : "border-divider"
         } ${disabled ? "bg-hover cursor-not-allowed" : ""}`}
       />
+      {maxLength && (
+        <p className="mt-1 text-xs text-text-muted text-right">{(value || "").length}/{maxLength}</p>
+      )}
       {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
     </div>
   );

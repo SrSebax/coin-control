@@ -1,8 +1,11 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowDownCircle, ArrowUpCircle, Eye, EyeOff } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Eye, EyeOff, EyeClosed } from "lucide-react";
 import { useTransactions } from "../hooks/useLocalStorage";
+import { useMoneyVisibility } from "../hooks/useHiddenBalances";
 import { parseLocalDate } from "../utils/date";
+
+const VISIBILITY_ICON = [Eye, EyeOff, EyeClosed];
+const VISIBILITY_LABEL = ["Ocultar saldo", "Ocultar todo el dinero de Inicio", "Mostrar valores"];
 
 const formatCurrency = (value) => {
   const n = Number(value || 0);
@@ -16,9 +19,11 @@ function percentChange(current, previous) {
 }
 
 export default function BalanceHero() {
-  const [hideBalance, setHideBalance] = useState(false);
   const navigate = useNavigate();
   const { transactions, summary } = useTransactions();
+  const { level, cycle, cardHidden } = useMoneyVisibility();
+  const hideBalance = cardHidden;
+  const VisibilityIcon = VISIBILITY_ICON[level];
 
   const saldo = summary.ingresos - summary.gastos;
 
@@ -38,11 +43,11 @@ export default function BalanceHero() {
         <div className="flex items-center gap-2">
           <p className="text-white/70 text-sm font-medium">Saldo disponible</p>
           <button
-            onClick={() => setHideBalance((v) => !v)}
+            onClick={cycle}
             className="cursor-pointer text-white/50 hover:text-white transition-colors"
-            aria-label={hideBalance ? "Mostrar saldo" : "Ocultar saldo"}
+            aria-label={VISIBILITY_LABEL[level]}
           >
-            {hideBalance ? <EyeOff size={15} /> : <Eye size={15} />}
+            <VisibilityIcon size={15} />
           </button>
         </div>
 

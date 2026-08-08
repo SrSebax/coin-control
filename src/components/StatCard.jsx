@@ -1,4 +1,5 @@
 import React from "react";
+import { useHiddenBalances } from "../hooks/useHiddenBalances";
 
 const formatCurrency = (value) => {
   const n = Number(value || 0);
@@ -26,6 +27,7 @@ export default function StatCard({
   tone = "emerald",
 }) {
   const t = TONES[tone];
+  const { hidden } = useHiddenBalances();
 
   const isPositiveChange = deltaPercent >= 0;
   // Para gastos, subir es "malo" (rojo); para ingresos, subir es "bueno" (verde).
@@ -38,7 +40,7 @@ export default function StatCard({
         <p className="text-sm font-medium text-text-secondary">{title}</p>
       </div>
 
-      <p className="text-2xl font-extrabold text-text">{formatCurrency(value)}</p>
+      <p className="text-2xl font-extrabold text-text">{hidden ? "••••••" : formatCurrency(value)}</p>
 
       {deltaPercent !== null && deltaPercent !== undefined && (
         <p

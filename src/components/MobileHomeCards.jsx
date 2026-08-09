@@ -78,12 +78,13 @@ export default function MobileHomeCards() {
     (t.type === "expense" ? expenseCategories : incomeCategories).find((c) => c.id === t.category) ||
     null;
 
-  // Solo Hoy y Ayer; el resto se ve en "Ver historial completo".
-  const todayOrYesterday = transactions.filter((t) => {
-    const label = formatRelativeDay(t.date);
-    return label === "Hoy" || label === "Ayer";
+  // Movimientos del mes actual; el resto se ve en "Ver historial completo".
+  const now = new Date();
+  const currentMonth = transactions.filter((t) => {
+    const d = parseLocalDate(t.date);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
-  const sorted = [...todayOrYesterday].sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
+  const sorted = [...currentMonth].sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
   const groups = groupByDay(sorted);
 
   return (

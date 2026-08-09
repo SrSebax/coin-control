@@ -10,7 +10,7 @@ import IconInput from "../../components/inputs/IconInput";
 import SubmitButton from "../../components/SubmitButton";
 import CancelButton from "../../components/CancelButton";
 import ConfirmModal from "../../components/ConfirmModal";
-import { Pencil, Plus, Search, Tag, Trash2 } from "lucide-react";
+import { ChevronLeft, Pencil, Plus, Search, Tag, Trash2 } from "lucide-react";
 import { useCategories } from "../../hooks/useCategories";
 
 const DEFAULT_COLOR = "#10b981";
@@ -159,13 +159,21 @@ export default function CategoriesView() {
     <Layout>
       {/* Mobile: lista de categorías con buscador */}
       <div className="md:hidden">
-        <div className="flex items-center justify-between mb-4 px-1">
-          <h1 className="text-xl font-extrabold text-text tracking-tight">Categorías</h1>
+        <div className="flex items-center gap-3 -mx-4 px-4 pb-4 mb-4 border-b border-divider">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            aria-label="Volver"
+            className="cursor-pointer p-1.5 -m-1.5 rounded-full text-text hover:bg-hover transition-colors"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <h1 className="text-lg font-bold text-text flex-1">Categorías</h1>
           <button
             type="button"
             onClick={handleAddCategory}
             aria-label="Nueva categoría"
-            className="cursor-pointer p-2 -m-2 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-hover transition-colors"
+            className="cursor-pointer p-1.5 -m-1.5 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-hover transition-colors"
           >
             <Plus size={22} />
           </button>

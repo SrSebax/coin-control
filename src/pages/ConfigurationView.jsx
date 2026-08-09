@@ -19,7 +19,9 @@ import {
   Smartphone,
   CheckCircle2,
   Share,
+  Repeat,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useLogoutController } from "../controller/LogoutController";
@@ -35,6 +37,7 @@ const SOCIAL_LINKS = [
 ];
 
 export default function ConfigurationView() {
+  const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { user, displayName } = useCurrentUser();
   const { logout } = useLogoutController();
@@ -242,6 +245,21 @@ export default function ConfigurationView() {
 
         {/* Datos */}
         <div className="bg-surface rounded-2xl border border-divider divide-y divide-divider overflow-hidden">
+          <button
+            type="button"
+            onClick={() => navigate("/recurring-movements")}
+            className="cursor-pointer w-full flex items-center justify-between p-4 hover:bg-hover transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <Repeat size={16} className="text-text-tertiary shrink-0" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-text">Movimientos recurrentes</p>
+                <p className="text-xs text-text-tertiary">Revisa y edita tus programaciones automáticas</p>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-text-muted shrink-0" />
+          </button>
+
           <button
             type="button"
             onClick={handleExport}

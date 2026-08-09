@@ -8,6 +8,7 @@ import { describeRecurrence, unitLabel } from "../utils/recurrence";
 const FREQUENCIES = [
   { id: "daily", label: "Diario" },
   { id: "weekly", label: "Semanal" },
+  { id: "biweekly", label: "Quincenal" },
   { id: "monthly", label: "Mensual" },
   { id: "yearly", label: "Anual" },
 ];
@@ -38,7 +39,10 @@ export default function RecurrenceSheet({ open, onClose, value, transactionDate,
   };
 
   const setDayOfMonth = (delta) => {
-    setDraft((prev) => ({ ...prev, dayOfMonth: Math.max(1, Math.min(31, prev.dayOfMonth + delta)) }));
+    setDraft((prev) => {
+      const max = prev.frequency === "biweekly" ? 16 : 31;
+      return { ...prev, dayOfMonth: Math.max(1, Math.min(max, prev.dayOfMonth + delta)) };
+    });
   };
 
   const toggleEndDate = () => {
@@ -90,7 +94,14 @@ export default function RecurrenceSheet({ open, onClose, value, transactionDate,
                   <button
                     key={f.id}
                     type="button"
-                    onClick={() => setDraft((prev) => ({ ...prev, frequency: f.id }))}
+                    onClick={() =>
+                      setDraft((prev) => ({
+                        ...prev,
+                        frequency: f.id,
+                        interval: f.id === "biweekly" ? 1 : prev.interval,
+                        dayOfMonth: f.id === "biweekly" ? Math.min(prev.dayOfMonth, 16) : prev.dayOfMonth,
+                      }))
+                    }
                     className={`cursor-pointer py-3 rounded-xl text-sm font-semibold transition-colors ${
                       isSelected ? "bg-emerald-500 text-white" : "bg-surface-alt text-text-secondary"
                     }`}
@@ -102,35 +113,39 @@ export default function RecurrenceSheet({ open, onClose, value, transactionDate,
             </div>
           </div>
 
-          <div>
-            <p className="text-sm text-text-tertiary mb-2">Cada cuánto</p>
-            <div className="flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() => setInterval_(-1)}
-                aria-label="Reducir"
-                className="cursor-pointer w-11 h-11 rounded-xl bg-surface-alt text-text flex items-center justify-center hover:bg-hover transition-colors"
-              >
-                <Minus size={16} />
-              </button>
-              <p className="text-lg text-text">
-                <span className="text-2xl font-bold mr-1.5">{draft.interval}</span>
-                {unitLabel(draft.frequency, draft.interval)}
-              </p>
-              <button
-                type="button"
-                onClick={() => setInterval_(1)}
-                aria-label="Aumentar"
-                className="cursor-pointer w-11 h-11 rounded-xl bg-surface-alt text-text flex items-center justify-center hover:bg-hover transition-colors"
-              >
-                <Plus size={16} />
-              </button>
-            </div>
-          </div>
-
-          {draft.frequency === "monthly" && (
+          {draft.frequency !== "biweekly" && (
             <div>
-              <p className="text-sm text-text-tertiary mb-2">Día del mes</p>
+              <p className="text-sm text-text-tertiary mb-2">Cada cuánto</p>
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setInterval_(-1)}
+                  aria-label="Reducir"
+                  className="cursor-pointer w-11 h-11 rounded-xl bg-surface-alt text-text flex items-center justify-center hover:bg-hover transition-colors"
+                >
+                  <Minus size={16} />
+                </button>
+                <p className="text-lg text-text">
+                  <span className="text-2xl font-bold mr-1.5">{draft.interval}</span>
+                  {unitLabel(draft.frequency, draft.interval)}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setInterval_(1)}
+                  aria-label="Aumentar"
+                  className="cursor-pointer w-11 h-11 rounded-xl bg-surface-alt text-text flex items-center justify-center hover:bg-hover transition-colors"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {(draft.frequency === "monthly" || draft.frequency === "biweekly") && (
+            <div>
+              <p className="text-sm text-text-tertiary mb-2">
+                {draft.frequency === "biweekly" ? "Día inicial" : "Día del mes"}
+              </p>
               <div className="flex items-center justify-between">
                 <button
                   type="button"
@@ -154,7 +169,9 @@ export default function RecurrenceSheet({ open, onClose, value, transactionDate,
                 </button>
               </div>
               <p className="text-xs text-text-muted mt-1.5">
-                Si el mes tiene menos días, se usará el último día del mes.
+                {draft.frequency === "biweekly"
+                  ? `Se generará los días ${draft.dayOfMonth} y ${Math.min(draft.dayOfMonth + 15, 31)} de cada mes.`
+                  : "Si el mes tiene menos días, se usará el último día del mes."}
               </p>
             </div>
           )}

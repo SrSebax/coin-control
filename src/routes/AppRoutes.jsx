@@ -7,6 +7,7 @@ import HomeView from "../pages/HomeView";
 import NewEntryView from "../pages/entry/NewEntryView";
 import EditEntryView from "../pages/entry/EditEntryView";
 import SelectEntryView from "../pages/entry/SelectEntryView";
+import RecurringMovementsView from "../pages/entry/RecurringMovementsView";
 import NotFoundView from "../pages/NotFoundView";
 import LoginView from "../pages/LoginView";
 import CategoriesView from "../pages/categories/CategoriesView";
@@ -69,6 +70,10 @@ export default function AppRoutes() {
       <Route
         path="/edit-entry/:entryId"
         element={user ? <EditEntryView /> : <Navigate to="/" replace />}
+      />
+      <Route
+        path="/recurring-movements"
+        element={user ? <RecurringMovementsView /> : <Navigate to="/" replace />}
       />
 
       {/* Ruta de Configuración */}

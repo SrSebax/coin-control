@@ -298,7 +298,6 @@ export default function NewEntryView() {
           onChange={handleChange}
           onBlur={() => setTouched((prev) => ({ ...prev, amount: true }))}
           placeholder="0"
-          autoFocus
         />
 
         <div className="flex justify-center mb-6">

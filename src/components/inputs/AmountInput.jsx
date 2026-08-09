@@ -66,7 +66,7 @@ export default function AmountInput({
             placeholder={placeholder}
             autoFocus={autoFocus}
             size={Math.max((amountFormatted || placeholder).length, 1)}
-            className="bg-transparent border-none outline-none text-5xl font-semibold text-text placeholder-text-muted/50 text-left min-w-[1ch]"
+            className="bg-transparent border-none outline-none text-5xl font-semibold text-text placeholder-text-muted/50 text-center min-w-[1ch]"
           />
         </div>
         {error && <p className="mt-2 text-xs text-red-500 text-center">{error}</p>}

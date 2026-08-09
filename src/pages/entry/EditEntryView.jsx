@@ -181,7 +181,6 @@ export default function EditEntryView() {
           onChange={handleChange}
           onBlur={() => setTouched((prev) => ({ ...prev, amount: true }))}
           placeholder="0"
-          autoFocus
         />
 
         <div className="flex justify-center mb-6">

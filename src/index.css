@@ -180,11 +180,18 @@ body {
   right: 0;
   bottom: 0;
   width: 100vw;
+  /* 100vh en mobile mide el viewport con la barra de direcciones oculta;
+     con la barra visible el contenido real queda más corto y el sheet se
+     corta abajo. 100dvh (dynamic viewport height) sigue el tamaño visible
+     real; 100vh queda como fallback para navegadores que no soportan dvh. */
   height: 100vh;
+  height: 100dvh;
   z-index: 9999;
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Empuja los bottom sheets por encima de la barra de gestos/home del cel. */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }

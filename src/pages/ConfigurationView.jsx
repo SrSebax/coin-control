@@ -16,6 +16,9 @@ import {
   Instagram,
   Linkedin,
   ChevronRight,
+  Smartphone,
+  CheckCircle2,
+  Share,
 } from "lucide-react";
 import { useTheme } from "../hooks/useTheme";
 import { useCurrentUser } from "../hooks/useCurrentUser";
@@ -23,6 +26,7 @@ import { useLogoutController } from "../controller/LogoutController";
 import { useTransactions } from "../hooks/useTransactions";
 import { useCategories } from "../hooks/useCategories";
 import { useBudget } from "../hooks/useBudget";
+import { usePwaInstall } from "../hooks/usePwaInstall";
 
 const SOCIAL_LINKS = [
   { label: "Instagram", href: "https://www.instagram.com/sebax_lond/", icon: Instagram },
@@ -37,6 +41,7 @@ export default function ConfigurationView() {
   const { transactions, importTransactions } = useTransactions();
   const { categories, importCategories } = useCategories();
   const { amount: budgetAmount, setBudgetAmount } = useBudget();
+  const { isInstalled, isInstallable, isIOS, promptInstall } = usePwaInstall();
 
   const [language, setLanguage] = useState("es");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -266,6 +271,55 @@ export default function ConfigurationView() {
           />
         </div>
 
+        {/* App */}
+        <div className="bg-surface rounded-2xl border border-divider overflow-hidden">
+          {isInstalled ? (
+            <div className="w-full flex items-center gap-2.5 p-4">
+              <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-text">App Instalada</p>
+                <p className="text-xs text-text-tertiary">¡Gracias por descargar la App!</p>
+
+              </div>
+            </div>
+          ) : isInstallable ? (
+            <button
+              type="button"
+              onClick={promptInstall}
+              className="cursor-pointer w-full flex items-center justify-between p-4 hover:bg-hover transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <Smartphone size={16} className="text-text-tertiary shrink-0" />
+                <div className="text-left">
+                  <p className="text-sm font-medium text-text">Descargar app</p>
+                  <p className="text-xs text-text-tertiary">Instalala en la pantalla de inicio de tu celular</p>
+                </div>
+              </div>
+              <ChevronRight size={16} className="text-text-muted shrink-0" />
+            </button>
+          ) : isIOS ? (
+            <div className="w-full flex items-center gap-2.5 p-4">
+              <Share size={16} className="text-text-tertiary shrink-0" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-text">Descargar app</p>
+                <p className="text-xs text-text-tertiary">
+                  Tocá Compartir y elegí "Agregar a inicio" para instalarla
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full flex items-center gap-2.5 p-4">
+              <Smartphone size={16} className="text-text-tertiary shrink-0" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-text">Descargar app</p>
+                <p className="text-xs text-text-tertiary">
+                  Abrí este link desde Chrome en tu celular para instalarla
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Cuenta */}
         <button
           type="button"
@@ -278,6 +332,8 @@ export default function ConfigurationView() {
         {/* Footer */}
         <div className="text-center pt-4 pb-2">
           <p className="text-xs text-text-tertiary mb-3">Desarrollado por Sebastian Londoño</p>
+          <p className="text-xs text-text-tertiary mb-3">Un agradecimiento especial a Ana Naranjo</p>
+          <p className="text-xs text-text-tertiary mb-3">Versión {import.meta.env.VITE_APP_VERSION}</p>
           <div className="flex items-center justify-center gap-3">
             {SOCIAL_LINKS.map((social) => {
               const SocialIcon = social.icon;

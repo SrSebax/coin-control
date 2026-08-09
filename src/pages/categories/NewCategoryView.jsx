@@ -107,7 +107,6 @@ export default function NewCategoryView() {
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               placeholder="Nombre de la categoría"
               maxLength={40}
-              autoFocus
               className="w-full bg-transparent border-none outline-none text-base text-text placeholder-text-muted"
             />
           </div>

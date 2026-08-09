@@ -4,7 +4,7 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "site": "coincontrol",
+    "site": "coin-control-nordware",
     "public": "dist",
     "ignore": [
       "firebase.json",

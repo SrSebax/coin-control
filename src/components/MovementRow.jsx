@@ -2,7 +2,7 @@ import * as LucideIcons from "lucide-react";
 import { useHiddenBalances } from "../hooks/useHiddenBalances";
 
 const formatCurrency = (value) =>
-  `$${Number(value || 0).toLocaleString("es-CO", { minimumFractionDigits: 2 })}`;
+  `$${Math.round(Number(value || 0)).toLocaleString("es-CO", { minimumFractionDigits: 0 })}`;
 
 export default function MovementRow({ transaction, category, dateLabel }) {
   const { hidden } = useHiddenBalances();

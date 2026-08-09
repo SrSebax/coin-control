@@ -10,7 +10,7 @@ import IconInput from "../../components/inputs/IconInput";
 import SubmitButton from "../../components/SubmitButton";
 import CancelButton from "../../components/CancelButton";
 import ConfirmModal from "../../components/ConfirmModal";
-import { Plus, Search, Tag, Trash2 } from "lucide-react";
+import { Pencil, Plus, Search, Tag, Trash2 } from "lucide-react";
 import { useCategories } from "../../hooks/useCategories";
 
 const DEFAULT_COLOR = "#10b981";
@@ -230,6 +230,14 @@ export default function CategoriesView() {
                       <Icon size={18} />
                     </span>
                     <span className="text-sm font-medium text-text truncate">{category.name}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleEditCategory(category)}
+                    aria-label={`Editar ${category.name}`}
+                    className="cursor-pointer p-2 rounded-full text-text-tertiary hover:text-emerald-600 hover:bg-hover transition-colors shrink-0"
+                  >
+                    <Pencil size={16} />
                   </button>
                   <button
                     type="button"

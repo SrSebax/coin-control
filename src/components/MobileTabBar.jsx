@@ -7,7 +7,7 @@ import AddMovementSheet from "./AddMovementSheet";
 const ADD_ENTRY_PATH = "/new-entry";
 // Prefijos de rutas con su propio footer fijo (botón de guardar/actualizar
 // pegado abajo) — ahí el tabbar tiene que ocultarse para no taparlo.
-const FIXED_FOOTER_PATH_PREFIXES = [ADD_ENTRY_PATH, "/edit-entry", "/new-category"];
+const FIXED_FOOTER_PATH_PREFIXES = [ADD_ENTRY_PATH, "/edit-entry", "/new-category", "/edit-category"];
 
 export default function MobileTabBar() {
   const { pathname } = useLocation();

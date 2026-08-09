@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import {
   collection,
   doc,
@@ -21,34 +21,72 @@ const chunk = (list, size) => {
   return chunks;
 };
 
+// Store a nivel de módulo: un solo listener de Firestore compartido por toda
+// la app, en vez de uno nuevo por cada pantalla que se monta. Así, al volver
+// a una vista ya visitada, los datos aparecen al toque (desde caché) en vez
+// de mostrar el flash de "cargando" mientras se vuelve a pedir todo.
+let cachedTransactions = [];
+let cachedLoading = true;
+let unsubscribeFn = null;
+let subscribedUid = undefined; // undefined = todavía no se intentó suscribir
+const listeners = new Set();
+
+function emitChange() {
+  listeners.forEach((listener) => listener());
+}
+
+function subscribe(listener) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function getTransactionsSnapshot() {
+  return cachedTransactions;
+}
+
+function getLoadingSnapshot() {
+  return cachedLoading;
+}
+
+function ensureSubscription(uid) {
+  if (subscribedUid === uid) return;
+  subscribedUid = uid;
+
+  if (unsubscribeFn) {
+    unsubscribeFn();
+    unsubscribeFn = null;
+  }
+
+  if (!uid) {
+    cachedTransactions = [];
+    cachedLoading = false;
+    emitChange();
+    return;
+  }
+
+  cachedLoading = true;
+  emitChange();
+
+  const ref = collection(db, "users", uid, "transactions");
+  unsubscribeFn = onSnapshot(ref, (snapshot) => {
+    cachedTransactions = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    cachedLoading = false;
+    emitChange();
+  });
+}
+
 // Hook específico para manejar transacciones financieras (Firestore: users/{uid}/transactions)
 export function useTransactions() {
   const { user, authLoading } = useCurrentUser();
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Todavía no sabemos si hay sesión o no: no tocar nada, dejar `loading`
-    // en true. Si no, hay una ventana donde "user" es null (auth aún sin
-    // resolver) y esto se lee como "no hay sesión", vaciando datos y
-    // disparando redirects falsos en pantallas que esperan a `loading`.
     if (authLoading) return;
-
-    if (!user) {
-      setTransactions([]);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    const ref = collection(db, "users", user.uid, "transactions");
-    const unsubscribe = onSnapshot(ref, (snapshot) => {
-      setTransactions(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    ensureSubscription(user?.uid || null);
   }, [user, authLoading]);
+
+  const transactions = useSyncExternalStore(subscribe, getTransactionsSnapshot);
+  const storeLoading = useSyncExternalStore(subscribe, getLoadingSnapshot);
+  const loading = authLoading || storeLoading;
 
   // Calcular resumen basado en las transacciones
   const calculateSummary = (transactionsList) => {

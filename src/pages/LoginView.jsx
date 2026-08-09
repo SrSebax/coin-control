@@ -16,15 +16,74 @@ import {
   CheckCircle2,
   AlertCircle,
   X,
+  Instagram,
+  Linkedin,
+  Globe,
 } from "lucide-react";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const SOCIAL_LINKS = [
+  { label: "Instagram", href: "https://www.instagram.com/sebax_lond/", icon: Instagram },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/sebastian-londo%C3%B1o-mesa/", icon: Linkedin },
+  { label: "Sitio web", href: "https://desarrollador-frontend-sebaslondev.vercel.app/", icon: Globe },
+];
+
 const ALERT_STYLES = {
-  success: { box: "bg-emerald-50 border-emerald-200 text-emerald-700", icon: CheckCircle2 },
-  error: { box: "bg-red-50 border-red-200 text-red-700", icon: AlertCircle },
-  info: { box: "bg-blue-50 border-blue-200 text-blue-700", icon: AlertCircle },
+  success: {
+    border: "border-emerald-200",
+    text: "text-emerald-800",
+    iconBg: "bg-emerald-100",
+    iconColor: "text-emerald-600",
+    bar: "bg-emerald-500",
+    icon: CheckCircle2,
+  },
+  error: {
+    border: "border-red-200",
+    text: "text-red-800",
+    iconBg: "bg-red-100",
+    iconColor: "text-red-600",
+    bar: "bg-red-500",
+    icon: AlertCircle,
+  },
+  info: {
+    border: "border-blue-200",
+    text: "text-blue-800",
+    iconBg: "bg-blue-100",
+    iconColor: "text-blue-600",
+    bar: "bg-blue-500",
+    icon: AlertCircle,
+  },
 };
+
+// Toast propio del login: no depende del tema (esta pantalla es siempre clara) y no
+// empuja el layout, a diferencia del banner inline que tenía antes.
+function LoginToast({ alert, onClose }) {
+  if (!alert.open) return null;
+  const style = ALERT_STYLES[alert.type] || ALERT_STYLES.info;
+  const AlertIcon = style.icon;
+
+  return (
+    <div className="fixed top-4 inset-x-4 sm:left-auto sm:right-4 sm:w-96 z-[60] animate-in slide-in-from-right-2">
+      <div
+        className={`flex items-start gap-3 p-4 rounded-2xl border bg-white shadow-xl ${style.border}`}
+      >
+        <span className={`shrink-0 p-1.5 rounded-full ${style.iconBg}`}>
+          <AlertIcon size={18} className={style.iconColor} />
+        </span>
+        <p className={`flex-1 text-sm font-medium leading-snug pt-0.5 ${style.text}`}>{alert.message}</p>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Cerrar"
+          className="cursor-pointer shrink-0 p-1 -m-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-black/5 transition-colors"
+        >
+          <X size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // Colores fijos siempre (esta pantalla no debe reaccionar al tema claro/oscuro).
 function FieldBox(props) {
@@ -55,7 +114,7 @@ function SocialButton({ onClick, disabled, icon, label }) {
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="cursor-pointer flex items-center justify-center gap-2.5 py-3.5 px-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+      className="cursor-pointer w-full flex items-center justify-center gap-2.5 py-3.5 px-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {icon}
       <span className="text-left leading-tight">
@@ -133,24 +192,6 @@ export default function LoginView() {
   };
 
   const fieldError = (field) => (touched[field] ? errors[field] : "");
-
-  const AlertStyle = ALERT_STYLES[alert.type] || ALERT_STYLES.info;
-  const AlertIcon = AlertStyle.icon;
-
-  const alertBanner = alert.open && (
-    <div className={`mb-5 flex items-start gap-2.5 p-3.5 rounded-xl border text-sm ${AlertStyle.box}`}>
-      <AlertIcon size={18} className="shrink-0 mt-0.5" />
-      <p className="flex-1">{alert.message}</p>
-      <button
-        type="button"
-        onClick={handleCloseAlert}
-        aria-label="Cerrar"
-        className="cursor-pointer shrink-0 p-0.5 -m-0.5 rounded-full hover:bg-black/5 transition-colors"
-      >
-        <X size={14} />
-      </button>
-    </div>
-  );
 
   const passwordToggle = (
     <button
@@ -316,15 +357,34 @@ export default function LoginView() {
   );
 
   const devCredits = (
-    <div className="mt-6 text-xs text-center text-slate-400 space-y-0.5">
+    <div className="mt-6 text-xs text-center text-slate-400">
       <p>
         Desarrollado por <span className="text-slate-600 font-semibold">Sebastian Londoño</span>
       </p>
+      <div className="flex items-center justify-center gap-3 mt-2">
+        {SOCIAL_LINKS.map((social) => {
+          const SocialIcon = social.icon;
+          return (
+            <a
+              key={social.label}
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={social.label}
+              className="cursor-pointer p-2 rounded-full text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+            >
+              <SocialIcon size={16} />
+            </a>
+          );
+        })}
+      </div>
     </div>
   );
 
   return (
     <>
+      <LoginToast alert={alert} onClose={handleCloseAlert} />
+
       {/* Mobile: pantalla clara fija, con ilustración e insignia de confianza */}
       <div className="md:hidden min-h-screen w-full bg-gradient-to-b from-emerald-50 via-white to-white relative overflow-hidden">
         <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-emerald-100/70 pointer-events-none" />
@@ -333,7 +393,7 @@ export default function LoginView() {
         <div className="absolute -bottom-44 -left-16 w-[140%] h-64 rounded-[50%] bg-emerald-200/50 pointer-events-none" />
 
         <div className="relative z-10 w-full max-w-md mx-auto px-6 pt-12 pb-10">
-          <div className="flex flex-col items-center text-center mb-2">
+          <div className={`flex flex-col items-center text-center ${showResetForm ? "mb-8" : "mb-2"}`}>
             {/* <img src={appIcon} alt="" className="w-24 h-24 mb-2" /> */}
             <h1 className="text-4xl font-extrabold tracking-tight">
               <span className="text-slate-800">Coin</span>
@@ -352,7 +412,6 @@ export default function LoginView() {
             />
           )}
 
-          {alertBanner}
           {showResetForm ? resetForm : mainForm}
 
           {devCredits}
@@ -375,7 +434,6 @@ export default function LoginView() {
 
         <div className="w-1/2 flex items-center justify-center p-12 overflow-y-auto">
           <div className="w-full max-w-sm">
-            {alertBanner}
             {showResetForm ? resetForm : mainForm}
             {devCredits}
           </div>

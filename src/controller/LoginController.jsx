@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -15,13 +15,17 @@ export function useLoginController() {
   const [alert, setAlert] = useState({ open: false, type: "info", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-
-  const showAlert = (type, message) => {
-    setAlert({ open: true, type, message });
-  };
+  const alertTimerRef = useRef(null);
 
   const handleCloseAlert = () => {
+    clearTimeout(alertTimerRef.current);
     setAlert((prev) => ({ ...prev, open: false }));
+  };
+
+  const showAlert = (type, message, duration = 4500) => {
+    clearTimeout(alertTimerRef.current);
+    setAlert({ open: true, type, message });
+    alertTimerRef.current = setTimeout(handleCloseAlert, duration);
   };
 
   const getErrorMessage = (code) => {
@@ -43,12 +47,17 @@ export function useLoginController() {
     return messages[code] || "Ocurrió un error. Intenta nuevamente.";
   };
 
+  // Pequeña pausa antes de navegar para que el toast de éxito alcance a verse.
+  const navigateAfterSuccess = (path) => {
+    setTimeout(() => navigate(path), 900);
+  };
+
   const loginWithEmail = async () => {
     setIsSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       showAlert("success", "Inicio de sesión exitoso");
-      navigate("/home");
+      navigateAfterSuccess("/home");
     } catch (error) {
       showAlert("error", getErrorMessage(error.code));
     } finally {
@@ -64,7 +73,7 @@ export function useLoginController() {
         await updateProfile(credential.user, { displayName: name.trim() });
       }
       showAlert("success", "Registro exitoso");
-      navigate("/home");
+      navigateAfterSuccess("/home");
     } catch (error) {
       showAlert("error", getErrorMessage(error.code));
     } finally {
@@ -77,7 +86,7 @@ export function useLoginController() {
     try {
       await signInWithPopup(auth, googleProvider);
       showAlert("success", "Inicio de sesión con Google exitoso");
-      navigate("/home");
+      navigateAfterSuccess("/home");
     } catch (error) {
       showAlert("error", getErrorMessage(error.code));
     } finally {

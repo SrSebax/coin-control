@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../services/firebase";
 
-import SplashView from "../pages/SplashView";
 import HomeView from "../pages/HomeView";
 import NewEntryView from "../pages/entry/NewEntryView";
 import EditEntryView from "../pages/entry/EditEntryView";
@@ -24,31 +23,17 @@ export default function AppRoutes() {
   useRecurrenceSync(!!user);
 
   useEffect(() => {
-    let resolvedAuth = false;
-    let resolvedTimeout = false;
-
-    const finishLoading = () => {
-      if (resolvedAuth && resolvedTimeout) setLoading(false);
-    };
-
-    const timeout = setTimeout(() => {
-      resolvedTimeout = true;
-      finishLoading();
-    }, 4000); // mínimo 3 segundos
-
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      resolvedAuth = true;
-      finishLoading();
+      setLoading(false);
     });
-
-    return () => {
-      clearTimeout(timeout);
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
-  if (loading) return <SplashView />;
+  // Sin splash: mientras se resuelve la sesión (normalmente instantáneo,
+  // Firebase Auth persiste localmente) no se muestra nada en vez de una
+  // pantalla de carga.
+  if (loading) return null;
 
   return (
     <Routes>

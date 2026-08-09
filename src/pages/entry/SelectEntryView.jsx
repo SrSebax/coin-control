@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import * as LucideIcons from "lucide-react";
-import { ArrowDownCircle, ArrowUpCircle, Check, ChevronLeft, Search, SlidersHorizontal, Tag, Trash2, X, XCircle } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Check, ChevronLeft, Search, SlidersHorizontal, Tag, X, XCircle } from "lucide-react";
 import Layout from "../../components/Layout";
 import PageHeading from "../../components/PageHeading";
 import TabsSwitcher from "../../components/TabsSwitcher";
@@ -9,6 +9,7 @@ import ConfirmModal from "../../components/ConfirmModal";
 import EmptyState from "../../components/EmptyState";
 import EntryCard from "../../components/EntryCard";
 import ModalPortal from "../../components/ModalPortal";
+import SwipeableRow from "../../components/SwipeableRow";
 import DateInput from "../../components/inputs/DateInput";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useCategories } from "../../hooks/useCategories";
@@ -360,53 +361,46 @@ export default function SelectEntryView() {
                     const accent = category?.color || (isExpense ? "#ef4444" : "#10b981");
 
                     return (
-                      <div
+                      <SwipeableRow
                         key={entry.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => handleEditEntry(entry.id)}
-                        onKeyDown={(e) => e.key === "Enter" && handleEditEntry(entry.id)}
-                        className="w-full flex items-center gap-3 p-3 rounded-2xl bg-surface border border-divider/60 active:bg-hover transition-colors cursor-pointer"
+                        onEdit={() => handleEditEntry(entry.id)}
+                        onDelete={() => handleDeleteClick(entry)}
+                        className="rounded-2xl border border-divider/60"
                       >
-                        <span className="p-2.5 rounded-full shrink-0" style={{ backgroundColor: `${accent}20` }}>
-                          <IconComponent size={20} style={{ color: accent }} />
-                        </span>
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => handleEditEntry(entry.id)}
+                          onKeyDown={(e) => e.key === "Enter" && handleEditEntry(entry.id)}
+                          className="w-full flex items-center gap-3 p-3 bg-surface active:bg-hover transition-colors cursor-pointer"
+                        >
+                          <span className="p-2.5 rounded-full shrink-0" style={{ backgroundColor: `${accent}20` }}>
+                            <IconComponent size={20} style={{ color: accent }} />
+                          </span>
 
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-text truncate">
-                            {entry.name || category?.name || (isExpense ? "Gasto" : "Ingreso")}
-                          </p>
-                          <p className="text-xs text-text-tertiary truncate flex items-center gap-1">
-                            <Tag size={11} className="shrink-0" />
-                            {category?.name || "Sin categoría"}
-                          </p>
-                          {entry.note && (
-                            <p className="text-xs text-text-muted italic truncate mt-0.5">{entry.note}</p>
-                          )}
-                        </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-text truncate">
+                              {entry.name || category?.name || (isExpense ? "Gasto" : "Ingreso")}
+                            </p>
+                            <p className="text-xs text-text-tertiary truncate flex items-center gap-1">
+                              <Tag size={11} className="shrink-0" />
+                              {category?.name || "Sin categoría"}
+                            </p>
+                            {entry.note && (
+                              <p className="text-xs text-text-muted italic truncate mt-0.5">{entry.note}</p>
+                            )}
+                          </div>
 
-                        <div className="flex items-center gap-1 shrink-0">
                           <span
-                            className={`text-sm font-bold ${
+                            className={`text-sm font-bold shrink-0 ${
                               isExpense ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
                             }`}
                           >
                             {isExpense ? "-" : "+"}
                             {formatCurrency(entry.amount)}
                           </span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteClick(entry);
-                            }}
-                            aria-label="Eliminar movimiento"
-                            className="cursor-pointer p-2 -mr-1 rounded-full text-text-tertiary hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-950/50 dark:hover:text-red-400 transition-colors"
-                          >
-                            <Trash2 size={15} />
-                          </button>
                         </div>
-                      </div>
+                      </SwipeableRow>
                     );
                   })}
                 </div>

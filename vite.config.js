@@ -13,6 +13,12 @@ export default defineConfig({
       includeAssets: ["favicon-light.svg", "favicon-dark.svg", "favicon.svg"],
       workbox: {
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+        // Con "autoUpdate" el SW nuevo espera a que se cierren todas las
+        // pestañas antes de tomar control, así que un fix recién publicado
+        // puede tardar en verse. skipWaiting + clientsClaim hace que el SW
+        // nuevo tome control apenas se detecta, sin esperar.
+        skipWaiting: true,
+        clientsClaim: true,
       },
       manifest: {
         name: "CoinControl",

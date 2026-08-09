@@ -23,11 +23,17 @@ const chunk = (list, size) => {
 
 // Hook específico para manejar transacciones financieras (Firestore: users/{uid}/transactions)
 export function useTransactions() {
-  const { user } = useCurrentUser();
+  const { user, authLoading } = useCurrentUser();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Todavía no sabemos si hay sesión o no: no tocar nada, dejar `loading`
+    // en true. Si no, hay una ventana donde "user" es null (auth aún sin
+    // resolver) y esto se lee como "no hay sesión", vaciando datos y
+    // disparando redirects falsos en pantallas que esperan a `loading`.
+    if (authLoading) return;
+
     if (!user) {
       setTransactions([]);
       setLoading(false);
@@ -42,7 +48,7 @@ export function useTransactions() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, authLoading]);
 
   // Calcular resumen basado en las transacciones
   const calculateSummary = (transactionsList) => {

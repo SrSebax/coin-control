@@ -16,7 +16,7 @@ import ToastMessage from "../components/ToastMessage";
 export default function HomeView() {
   const [toast, setToast] = useState(null);
   const location = useLocation();
-  const { displayName } = useCurrentUser();
+  const { user, displayName } = useCurrentUser();
   const { monthIncome, monthExpense, incomeDelta, expenseDelta } = useMonthlyStats();
 
   const firstName = displayName ? displayName.split(" ")[0] : "";
@@ -38,9 +38,18 @@ export default function HomeView() {
       <div className="space-y-5">
         {/* Saludo: mismo diseño en mobile y desktop, ya no vive en el navbar */}
         <div className="flex items-center gap-3 px-1">
-          <span className="shrink-0 w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-lg font-bold shadow-md">
-            {initial}
-          </span>
+          {user?.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt=""
+              referrerPolicy="no-referrer"
+              className="shrink-0 w-11 h-11 rounded-2xl object-cover shadow-md"
+            />
+          ) : (
+            <span className="shrink-0 w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-lg font-bold shadow-md">
+              {initial}
+            </span>
+          )}
           <div className="min-w-0">
             <h1 className="text-xl md:text-2xl font-extrabold text-text tracking-tight truncate">
               ¡Hola! {" "}

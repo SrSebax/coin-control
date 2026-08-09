@@ -137,9 +137,18 @@ export default function ConfigurationView() {
       {/* Mobile: pantalla dedicada con el mismo lenguaje visual que Inicio/Categorías */}
       <div className="md:hidden space-y-5">
         <div className="flex items-center gap-3 px-1">
-          <span className="shrink-0 w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-lg font-bold shadow-md">
-            {initial}
-          </span>
+          {user?.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt=""
+              referrerPolicy="no-referrer"
+              className="shrink-0 w-11 h-11 rounded-2xl object-cover shadow-md"
+            />
+          ) : (
+            <span className="shrink-0 w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-lg font-bold shadow-md">
+              {initial}
+            </span>
+          )}
           <div className="min-w-0">
             <p className="text-base font-bold text-text truncate">{displayName || "Usuario"}</p>
             <p className="text-sm text-text-tertiary truncate">{user?.email || ""}</p>

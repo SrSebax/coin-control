@@ -15,11 +15,20 @@ export default function UserActions() {
 
   return (
     <div className="relative">
-      <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center shadow-sm">
-        <span className="text-white text-sm font-bold">
-          {getUserInitials(user?.displayName || user?.email?.split("@")[0] || "Usuario")}
-        </span>
-      </div>
+      {user?.photoURL ? (
+        <img
+          src={user.photoURL}
+          alt=""
+          referrerPolicy="no-referrer"
+          className="w-9 h-9 rounded-full object-cover shadow-sm"
+        />
+      ) : (
+        <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center shadow-sm">
+          <span className="text-white text-sm font-bold">
+            {getUserInitials(user?.displayName || user?.email?.split("@")[0] || "Usuario")}
+          </span>
+        </div>
+      )}
       <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-surface rounded-full shadow-sm" />
     </div>
   );

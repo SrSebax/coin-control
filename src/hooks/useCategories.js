@@ -7,11 +7,13 @@ import { defaultCategories } from "../data/data";
 const EMPTY_CATEGORIES = { expense: [], income: [] };
 
 export function useCategories() {
-  const { user } = useCurrentUser();
+  const { user, authLoading } = useCurrentUser();
   const [categories, setCategories] = useState(EMPTY_CATEGORIES);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
+
     if (!user) {
       setCategories(EMPTY_CATEGORIES);
       setLoading(false);
@@ -32,7 +34,7 @@ export function useCategories() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, authLoading]);
 
   const persist = (newCategories) => {
     setCategories(newCategories);

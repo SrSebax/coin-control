@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { TrendingUp, TrendingDown, ChevronRight, Eye, EyeOff, EyeClosed } from "lucide-react";
 import { useTransactions } from "../hooks/useTransactions";
 import { useCategories } from "../hooks/useCategories";
@@ -7,6 +8,8 @@ import { useBudget } from "../hooks/useBudget";
 import { useMoneyVisibility } from "../hooks/useHiddenBalances";
 import { parseLocalDate } from "../utils/date";
 import MovementRow from "./MovementRow";
+import SwipeableRow from "./SwipeableRow";
+import ConfirmModal from "./ConfirmModal";
 
 const formatCurrency = (value) => `$${Math.round(Number(value || 0)).toLocaleString("es-CO")}`;
 
@@ -45,11 +48,20 @@ function groupByDay(transactions) {
 }
 
 export default function MobileHomeCards() {
-  const { transactions, summary } = useTransactions();
+  const navigate = useNavigate();
+  const { transactions, summary, deleteTransaction } = useTransactions();
   const { getCategoriesByType } = useCategories();
   const { monthIncome, monthExpense } = useMonthlyStats();
   const { amount: budgetAmount } = useBudget();
   const { level, cycle, cardHidden, allHidden } = useMoneyVisibility();
+  const [confirmModal, setConfirmModal] = useState({ open: false, entry: null });
+
+  const handleEdit = (entryId) => navigate(`/edit-entry/${entryId}`);
+  const handleDeleteClick = (entry) => setConfirmModal({ open: true, entry });
+  const handleConfirmDelete = () => {
+    if (confirmModal.entry) deleteTransaction(confirmModal.entry.id);
+    setConfirmModal({ open: false, entry: null });
+  };
   const VisibilityIcon = VISIBILITY_ICON[level];
   const cardMask = (value, sign = "") => (cardHidden ? "••••••" : `${sign}${formatCurrency(value)}`);
   const mask = (value, sign = "") => (allHidden ? "••••••" : `${sign}${formatCurrency(value)}`);
@@ -153,14 +165,29 @@ export default function MobileHomeCards() {
                 {mask(Math.abs(group.total), group.total >= 0 ? "+" : "-")}
               </p>
             </div>
-            <div className="bg-surface rounded-2xl border border-divider p-2 shadow-sm">
+            <div className="bg-surface rounded-2xl border border-divider p-2 shadow-sm space-y-1">
               {group.items.map((t) => (
-                <MovementRow key={t.id} transaction={t} category={getCategoryFor(t)} dateLabel="" />
+                <SwipeableRow
+                  key={t.id}
+                  onEdit={() => handleEdit(t.id)}
+                  onDelete={() => handleDeleteClick(t)}
+                  className="rounded-xl"
+                >
+                  <MovementRow transaction={t} category={getCategoryFor(t)} dateLabel="" />
+                </SwipeableRow>
               ))}
             </div>
           </div>
         ))
       )}
+
+      <ConfirmModal
+        open={confirmModal.open}
+        title="¿Eliminar movimiento?"
+        message={`¿Estás seguro de eliminar el movimiento "${confirmModal.entry?.name || "sin nombre"}"? Esta acción no se puede deshacer.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmModal({ open: false, entry: null })}
+      />
     </div>
   );
 }

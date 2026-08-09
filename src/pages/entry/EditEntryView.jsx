@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import * as LucideIcons from "lucide-react";
 import Layout from "../../components/Layout";
@@ -24,7 +24,7 @@ export default function EditEntryView() {
   const navigate = useNavigate();
   const location = useLocation();
   const { entryId } = useParams();
-  const { transactions, updateTransaction } = useTransactions();
+  const { transactions, updateTransaction, loading } = useTransactions();
   const { getCategoriesByType } = useCategories();
 
   const originalTransaction = transactions.find((t) => t.id === entryId) || null;
@@ -32,23 +32,12 @@ export default function EditEntryView() {
   const [activeTab, setActiveTab] = useState(() => {
     if (location.state?.type === "expense") return "gastos";
     if (location.state?.type === "income") return "ingresos";
-    return originalTransaction?.type === "income" ? "ingresos" : "gastos";
+    return "gastos";
   });
   const isExpense = activeTab === "gastos";
 
   const [formData, setFormData] = useState(() => {
     if (location.state?.restoredFormData) return location.state.restoredFormData;
-    if (originalTransaction) {
-      return {
-        amount: originalTransaction.amount.toString(),
-        name: originalTransaction.name || "",
-        category: originalTransaction.category || "",
-        date: originalTransaction.date.split("T")[0] || "",
-        note: originalTransaction.note || "",
-        recurring: originalTransaction.recurring || false,
-        recurrence: originalTransaction.recurrence || null,
-      };
-    }
     return { amount: "", name: "", category: "", date: "", note: "", recurring: false, recurrence: null };
   });
 
@@ -65,12 +54,39 @@ export default function EditEntryView() {
   const [mobileNoteOpen, setMobileNoteOpen] = useState(() => Boolean(formData.note));
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
   const [toast, setToast] = useState(null);
+  const hydratedRef = useRef(false);
 
-  // Si el movimiento no existe, volver al listado
+  // Firestore tarda un instante en entregar el primer snapshot (`loading`).
+  // Apenas llega el movimiento, cargamos sus datos en el formulario — una
+  // sola vez, para no pisar lo que el usuario ya escribió ni lo que vino de
+  // "restoredFormData" (categoría creada al vuelo).
   useEffect(() => {
-    if (!originalTransaction) navigate("/select-entry");
+    if (hydratedRef.current || loading || !originalTransaction) return;
+    hydratedRef.current = true;
+
+    if (!location.state?.restoredFormData) {
+      setFormData({
+        amount: originalTransaction.amount.toString(),
+        name: originalTransaction.name || "",
+        category: originalTransaction.category || "",
+        date: originalTransaction.date.split("T")[0] || "",
+        note: originalTransaction.note || "",
+        recurring: originalTransaction.recurring || false,
+        recurrence: originalTransaction.recurrence || null,
+      });
+      setMobileNoteOpen(Boolean(originalTransaction.note));
+    }
+    if (!location.state?.type) {
+      setActiveTab(originalTransaction.type === "income" ? "ingresos" : "gastos");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loading, originalTransaction]);
+
+  // Sólo si ya terminó de cargar y el movimiento realmente no existe.
+  useEffect(() => {
+    if (!loading && !originalTransaction) navigate("/select-entry");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, originalTransaction]);
 
   useEffect(() => {
     if (location.state?.restoredFormData) {
@@ -117,7 +133,7 @@ export default function EditEntryView() {
     setIsSubmitting(true);
 
     try {
-      updateTransaction(entryId, confirmModal.data);
+      await updateTransaction(entryId, confirmModal.data);
       navigate("/home", {
         state: {
           message: `${isExpense ? "Gasto" : "Ingreso"} actualizado exitosamente`,
@@ -126,6 +142,7 @@ export default function EditEntryView() {
       });
     } catch (error) {
       console.error("Error al actualizar la transacción:", error);
+      setToast({ message: "No se pudo actualizar el movimiento. Intenta de nuevo.", type: "error" });
     } finally {
       setIsSubmitting(false);
       setConfirmModal({ open: false, title: "", message: "", data: null });

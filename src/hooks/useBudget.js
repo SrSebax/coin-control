@@ -4,11 +4,13 @@ import { db } from "../services/firebase";
 import { useCurrentUser } from "./useCurrentUser";
 
 export function useBudget() {
-  const { user } = useCurrentUser();
+  const { user, authLoading } = useCurrentUser();
   const [amount, setAmount] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
+
     if (!user) {
       setAmount(null);
       setLoading(false);
@@ -23,7 +25,7 @@ export function useBudget() {
     });
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user, authLoading]);
 
   const setBudgetAmount = (newAmount) => {
     setAmount(newAmount);

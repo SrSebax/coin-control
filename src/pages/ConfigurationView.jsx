@@ -170,6 +170,9 @@ export default function ConfigurationView() {
           <div className="flex items-center gap-2 mb-3">
             <Globe size={16} className="text-text-tertiary" />
             <p className="text-sm font-semibold text-text">Idioma</p>
+            <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-text-tertiary bg-surface-alt px-2 py-0.5 rounded-full">
+              Próximamente
+            </span>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {[
@@ -181,8 +184,8 @@ export default function ConfigurationView() {
                 <button
                   key={id}
                   type="button"
-                  onClick={() => setLanguage(id)}
-                  className={`cursor-pointer py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                  disabled
+                  className={`cursor-not-allowed opacity-50 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
                     isSelected ? "bg-emerald-500 text-white" : "bg-surface-alt text-text-secondary"
                   }`}
                 >

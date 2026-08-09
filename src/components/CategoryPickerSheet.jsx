@@ -4,7 +4,7 @@ import * as LucideIcons from "lucide-react";
 import { X, Plus, Tag, Search } from "lucide-react";
 import ModalPortal from "./ModalPortal";
 
-export default function CategoryPickerSheet({ open, onClose, categories, selectedId, onSelect, type, draft }) {
+export default function CategoryPickerSheet({ open, onClose, categories, selectedId, onSelect, type, draft, returnTo = "/new-entry" }) {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
 
@@ -23,7 +23,7 @@ export default function CategoryPickerSheet({ open, onClose, categories, selecte
 
   const handleAddNew = () => {
     onClose();
-    navigate("/new-category", { state: { type, returnTo: "/new-entry", draft } });
+    navigate("/new-category", { state: { type, returnTo, draft } });
   };
 
   return (

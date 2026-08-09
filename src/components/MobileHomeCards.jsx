@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { TrendingUp, TrendingDown, ChevronRight, Eye, EyeOff, EyeClosed } from "lucide-react";
-import { useTransactions } from "../hooks/useLocalStorage";
+import { useTransactions } from "../hooks/useTransactions";
 import { useCategories } from "../hooks/useCategories";
 import { useMonthlyStats } from "../hooks/useMonthlyStats";
 import { useBudget } from "../hooks/useBudget";

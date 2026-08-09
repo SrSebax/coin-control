@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { PieChart as PieChartIcon } from "lucide-react";
-import { useTransactions } from "../hooks/useLocalStorage";
+import { useTransactions } from "../hooks/useTransactions";
 import { useCategories } from "../hooks/useCategories";
 import ExpenseDonutChart from "./charts/ExpenseDonutChart";
 

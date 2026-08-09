@@ -15,7 +15,7 @@ import ToastMessage from "../../components/ToastMessage";
 import CategoryPickerSheet from "../../components/CategoryPickerSheet";
 import RecurrenceSheet from "../../components/RecurrenceSheet";
 import { Save, ChevronLeft, ChevronRight, Tag, Plus, Repeat, X, Loader2 } from "lucide-react";
-import { useTransactions } from "../../hooks/useLocalStorage";
+import { useTransactions } from "../../hooks/useTransactions";
 import { useCategories } from "../../hooks/useCategories";
 import { describeRecurrence } from "../../utils/recurrence";
 import CancelButton from "../../components/CancelButton";

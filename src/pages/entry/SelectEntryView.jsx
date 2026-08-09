@@ -10,7 +10,7 @@ import EmptyState from "../../components/EmptyState";
 import EntryCard from "../../components/EntryCard";
 import ModalPortal from "../../components/ModalPortal";
 import DateInput from "../../components/inputs/DateInput";
-import { useTransactions } from "../../hooks/useLocalStorage";
+import { useTransactions } from "../../hooks/useTransactions";
 import { useCategories } from "../../hooks/useCategories";
 import { parseLocalDate } from "../../utils/date";
 

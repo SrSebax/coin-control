@@ -20,7 +20,7 @@ import {
 import { useTheme } from "../hooks/useTheme";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useLogoutController } from "../controller/LogoutController";
-import { useTransactions } from "../hooks/useLocalStorage";
+import { useTransactions } from "../hooks/useTransactions";
 import { useCategories } from "../hooks/useCategories";
 import { useBudget } from "../hooks/useBudget";
 
@@ -34,14 +34,15 @@ export default function ConfigurationView() {
   const { theme, setTheme } = useTheme();
   const { user, displayName } = useCurrentUser();
   const { logout } = useLogoutController();
-  const { transactions } = useTransactions();
-  const { categories } = useCategories();
-  const { amount: budgetAmount } = useBudget();
+  const { transactions, importTransactions } = useTransactions();
+  const { categories, importCategories } = useCategories();
+  const { amount: budgetAmount, setBudgetAmount } = useBudget();
 
   const [language, setLanguage] = useState("es");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
+  const [isImporting, setIsImporting] = useState(false);
   const [toast, setToast] = useState(null);
   const fileInputRef = useRef(null);
 
@@ -103,14 +104,20 @@ export default function ConfigurationView() {
     reader.readAsText(file);
   };
 
-  const handleConfirmImport = () => {
-    if (!pendingImport) return;
-    localStorage.setItem("coinControl_transactions", JSON.stringify(pendingImport.transactions));
-    localStorage.setItem("coinControl_categories", JSON.stringify(pendingImport.categories));
-    if (pendingImport.budget) {
-      localStorage.setItem("coinControl_budget", JSON.stringify(pendingImport.budget));
+  const handleConfirmImport = async () => {
+    if (!pendingImport || isImporting) return;
+    setIsImporting(true);
+    try {
+      await importTransactions(pendingImport.transactions);
+      await importCategories(pendingImport.categories);
+      if (pendingImport.budget) setBudgetAmount(pendingImport.budget.amount);
+      setToast({ message: "Respaldo restaurado correctamente.", type: "success" });
+    } catch {
+      setToast({ message: "No se pudo restaurar el respaldo. Intenta de nuevo.", type: "error" });
+    } finally {
+      setIsImporting(false);
+      setPendingImport(null);
     }
-    window.location.reload();
   };
 
   return (

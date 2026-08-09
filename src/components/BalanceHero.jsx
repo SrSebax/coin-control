@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ArrowDownCircle, ArrowUpCircle, Eye, EyeOff, EyeClosed } from "lucide-react";
-import { useTransactions } from "../hooks/useLocalStorage";
+import { useTransactions } from "../hooks/useTransactions";
 import { useMoneyVisibility } from "../hooks/useHiddenBalances";
 import { parseLocalDate } from "../utils/date";
 

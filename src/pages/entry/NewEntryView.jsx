@@ -29,7 +29,7 @@ import {
   Plus,
   Repeat,
 } from "lucide-react";
-import { useTransactions } from "../../hooks/useLocalStorage";
+import { useTransactions } from "../../hooks/useTransactions";
 import { useCategories } from "../../hooks/useCategories";
 import { parseLocalDate } from "../../utils/date";
 import { describeRecurrence } from "../../utils/recurrence";

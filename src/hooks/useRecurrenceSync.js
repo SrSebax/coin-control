@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
-import { useTransactions } from "./useLocalStorage";
+import { useTransactions } from "./useTransactions";
 import { generateDueOccurrences } from "../utils/recurrence";
 
 // Al cargar la app (una sola vez por sesión), genera las transacciones que
 // las plantillas recurrentes deberían haber creado hasta hoy. No hay backend
 // ni cron: esto es el "ponerse al día" que corre en el cliente.
 export function useRecurrenceSync(enabled) {
-  const { transactions, replaceTransactions } = useTransactions();
+  const { transactions, applyRecurrenceUpdates } = useTransactions();
   const ranRef = useRef(false);
 
   useEffect(() => {
@@ -41,11 +41,7 @@ export function useRecurrenceSync(enabled) {
 
     if (additions.length === 0) return;
 
-    const nextTransactions = transactions
-      .map((t) => updatedTemplates.get(t.id) || t)
-      .concat(additions);
-
-    replaceTransactions(nextTransactions);
+    applyRecurrenceUpdates({ additions, templateUpdates: Array.from(updatedTemplates.values()) });
     // Corre una sola vez por sesión; no debe reaccionar a cambios posteriores.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);

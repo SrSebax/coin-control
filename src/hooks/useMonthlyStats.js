@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useTransactions } from "./useLocalStorage";
+import { useTransactions } from "./useTransactions";
 
 function sumByType(transactions, type) {
   return transactions.filter((t) => t.type === type).reduce((sum, t) => sum + t.amount, 0);

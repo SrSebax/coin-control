@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   Share,
   Repeat,
+  HelpCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
@@ -91,6 +92,8 @@ export default function ConfigurationView() {
   };
 
   const handleImportClick = () => fileInputRef.current?.click();
+
+  const handleRestartTutorial = () => navigate("/home", { state: { startTutorial: true } });
 
   const handleFileSelected = (e) => {
     const file = e.target.files?.[0];
@@ -346,6 +349,22 @@ export default function ConfigurationView() {
             </div>
           )}
         </div>
+
+        {/* Ayuda */}
+        <button
+          type="button"
+          onClick={handleRestartTutorial}
+          className="cursor-pointer w-full flex items-center justify-between p-4 bg-surface rounded-2xl border border-divider hover:bg-hover transition-colors"
+        >
+          <div className="flex items-center gap-2.5">
+            <HelpCircle size={16} className="text-text-tertiary shrink-0" />
+            <div className="text-left">
+              <p className="text-sm font-medium text-text">Ver tutorial de nuevo</p>
+              <p className="text-xs text-text-tertiary">Repite el recorrido guiado de Inicio</p>
+            </div>
+          </div>
+          <ChevronRight size={16} className="text-text-muted shrink-0" />
+        </button>
 
         {/* Cuenta */}
         <button

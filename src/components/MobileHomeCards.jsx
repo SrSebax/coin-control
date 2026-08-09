@@ -90,7 +90,10 @@ export default function MobileHomeCards() {
   return (
     <div className="md:hidden space-y-4">
       {/* Saldo disponible */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a1f1a] to-[#0d2b22] text-white p-6 shadow-lg">
+      <div
+        data-tour="balance-card"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a1f1a] to-[#0d2b22] text-white p-6 shadow-lg"
+      >
         <div className="flex items-center justify-between mb-1">
           <p className="text-white/70 text-sm font-medium">Saldo disponible</p>
           <button
@@ -143,7 +146,8 @@ export default function MobileHomeCards() {
       {/* Ver historial completo */}
       <Link
         to="/select-entry"
-        className="flex items-center gap-1 text-sm font-semibold text-emerald-600 dark:text-emerald-400 px-1"
+        data-tour="history-link"
+        className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 dark:text-emerald-400 px-1"
       >
         Ver historial completo <ChevronRight size={16} />
       </Link>

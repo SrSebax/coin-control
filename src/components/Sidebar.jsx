@@ -11,12 +11,18 @@ import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useTheme } from "../hooks/useTheme";
 import logoIconDark from "../assets/favicon-dark.svg";
 import logoIconLight from "../assets/favicon-light.svg";
-import logoFull from "../assets/coin-control-dark.svg";
+import logoFullDark from "../assets/coin-control-dark.svg";
+import logoFullLight from "../assets/coin-control-light.svg";
 
 const EXPANDABLE = {
   "/categories": { key: "categories", editPath: "/select-category", editLabel: "Editar categoría", matchEdit: "/edit-category/" },
   "/new-entry": { key: "entries", editPath: "/select-entry", editLabel: "Editar movimiento", matchEdit: "/edit-entry/" },
 };
+
+const GROUPS = [
+  { label: "Principal", paths: ["/home", "/new-entry"] },
+  { label: "Gestión", paths: ["/categories", "/settings"] },
+];
 
 function getInitials(name) {
   if (!name) return "U";
@@ -39,12 +45,12 @@ export default function Sidebar({ collapsed }) {
 
   const widthClass = collapsed ? "w-16" : "w-64";
 
-  const activeClasses = "bg-gradient-to-r from-emerald-600/50 to-emerald-600/10 text-white";
-  const inactiveClasses = "text-white/65 hover:bg-white/5 hover:text-white";
+  const activeClasses = "bg-gradient-to-r from-[var(--color-primary)]/20 to-[var(--color-primary)]/5 text-[var(--color-primary)]";
+  const inactiveClasses = "text-text-secondary hover:bg-hover hover:text-text";
 
   return (
     <aside
-      className={`hidden md:flex bg-gradient-to-b from-[#0b1a15] to-[#081310] border-r border-white/5 transition-all duration-300 ease-in-out h-screen flex-col shadow-lg ${widthClass}`}
+      className={`hidden md:flex bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out h-screen flex-col shadow-lg ${widthClass}`}
     >
       {/* Cabecera */}
       <div className="flex items-center px-4 py-4 shrink-0">
@@ -56,80 +62,97 @@ export default function Sidebar({ collapsed }) {
               className="w-11 h-11 rounded-full shrink-0"
             />
           ) : (
-            <img src={logoFull} alt="CoinControl" className="h-11 w-auto" />
+            <img src={isDark ? logoFullDark : logoFullLight} alt="CoinControl" className="h-11 w-auto" />
           )}
         </Link>
       </div>
 
       {/* Navegación */}
-      <nav className="flex flex-col gap-1 px-2 flex-1 overflow-y-auto">
-        {itemsRoutes.map(({ path, label, icon }) => {
-          const expandable = EXPANDABLE[path];
+      <nav className="flex flex-col gap-4 px-2 flex-1 overflow-y-auto">
+        {GROUPS.map((group) => {
+          const groupItems = group.paths
+            .map((path) => itemsRoutes.find((item) => item.path === path))
+            .filter(Boolean);
 
-          if (expandable) {
-            const isExpanded = expandedItems[expandable.key];
-            const isEditActive =
-              pathname === expandable.editPath || pathname.startsWith(expandable.matchEdit);
+          if (groupItems.length === 0) return null;
 
-            return (
-              <div key={path} className="flex flex-col">
-                <div
-                  className={`flex items-center rounded-lg transition-all duration-200 ${
-                    pathname === path ? activeClasses : inactiveClasses
-                  }`}
-                >
+          return (
+            <div key={group.label} className="flex flex-col gap-1">
+              {!collapsed && (
+                <span className="px-3 pb-1 text-[11px] font-semibold tracking-wider text-text-muted uppercase">
+                  {group.label}
+                </span>
+              )}
+              {groupItems.map(({ path, label, icon }) => {
+                const expandable = EXPANDABLE[path];
+
+                if (expandable) {
+                  const isExpanded = expandedItems[expandable.key];
+                  const isEditActive =
+                    pathname === expandable.editPath || pathname.startsWith(expandable.matchEdit);
+
+                  return (
+                    <div key={path} className="flex flex-col">
+                      <div
+                        className={`flex items-center rounded-lg transition-all duration-200 ${
+                          pathname === path ? activeClasses : inactiveClasses
+                        }`}
+                      >
+                        <Link
+                          to={path}
+                          className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium flex-grow"
+                        >
+                          {icon}
+                          {!collapsed && <span>{label}</span>}
+                        </Link>
+                        {!collapsed && (
+                          <button
+                            onClick={() => toggleExpanded(expandable.key)}
+                            className="pr-3 text-text-tertiary hover:text-text transition-colors cursor-pointer"
+                            aria-label={isExpanded ? `Contraer ${label}` : `Expandir ${label}`}
+                          >
+                            {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                          </button>
+                        )}
+                      </div>
+                      {!collapsed && isExpanded && (
+                        <Link
+                          to={expandable.editPath}
+                          className={`flex items-center gap-3 px-3 py-2 ml-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                            isEditActive ? activeClasses : "text-text-tertiary hover:bg-hover hover:text-text"
+                          }`}
+                        >
+                          <Edit size={16} />
+                          <span>{expandable.editLabel}</span>
+                        </Link>
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
                   <Link
+                    key={path}
                     to={path}
-                    className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium flex-grow"
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      pathname === path ? activeClasses : inactiveClasses
+                    }`}
                   >
                     {icon}
                     {!collapsed && <span>{label}</span>}
                   </Link>
-                  {!collapsed && (
-                    <button
-                      onClick={() => toggleExpanded(expandable.key)}
-                      className="pr-3 text-white/40 hover:text-white/80 transition-colors cursor-pointer"
-                      aria-label={isExpanded ? `Contraer ${label}` : `Expandir ${label}`}
-                    >
-                      {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                    </button>
-                  )}
-                </div>
-                {!collapsed && isExpanded && (
-                  <Link
-                    to={expandable.editPath}
-                    className={`flex items-center gap-3 px-3 py-2 ml-4 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      isEditActive ? activeClasses : "text-white/50 hover:bg-white/5 hover:text-white"
-                    }`}
-                  >
-                    <Edit size={16} />
-                    <span>{expandable.editLabel}</span>
-                  </Link>
-                )}
-              </div>
-            );
-          }
-
-          return (
-            <Link
-              key={path}
-              to={path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                pathname === path ? activeClasses : inactiveClasses
-              }`}
-            >
-              {icon}
-              {!collapsed && <span>{label}</span>}
-            </Link>
+                );
+              })}
+            </div>
           );
         })}
       </nav>
 
       {/* Usuario + créditos */}
-      <div className="shrink-0 border-t border-white/5 px-2 py-2">
+      <div className="shrink-0 border-t border-sidebar-border px-2 py-2">
         <Link
           to="/settings"
-          className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/5 transition"
+          className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-hover transition"
         >
           <span className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white text-sm font-bold shrink-0">
             {getInitials(displayName)}
@@ -137,17 +160,17 @@ export default function Sidebar({ collapsed }) {
           {!collapsed && (
             <>
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-medium text-white truncate">
+                <span className="block text-sm font-medium text-text truncate">
                   {displayName || "Usuario"}
                 </span>
-                <span className="block text-xs text-white/40 truncate">{user?.email || ""}</span>
+                <span className="block text-xs text-text-tertiary truncate">{user?.email || ""}</span>
               </span>
-              <ChevronsRight size={14} className="text-white/30 shrink-0" />
+              <ChevronsRight size={14} className="text-text-tertiary shrink-0" />
             </>
           )}
         </Link>
         {!collapsed && (
-          <p className="text-[10px] text-white/25 text-center pt-2">Hecho por Nørdware</p>
+          <p className="text-[10px] text-text-muted text-center pt-2">Hecho por Nørdware</p>
         )}
       </div>
     </aside>

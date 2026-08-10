@@ -30,8 +30,8 @@ export default function StatCard({
   const { hidden } = useHiddenBalances();
 
   const isPositiveChange = deltaPercent >= 0;
-  // Para gastos, subir es "malo" (rojo); para ingresos, subir es "bueno" (verde).
-  const deltaIsGood = tone === "emerald" ? isPositiveChange : !isPositiveChange;
+  // Para gastos, subir es "malo" (rojo); para ingresos y ahorro, subir es "bueno" (verde).
+  const deltaIsGood = tone === "rose" ? !isPositiveChange : isPositiveChange;
 
   return (
     <div className={`rounded-2xl border border-divider shadow-md p-5 ${t.bg}`}>

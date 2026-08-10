@@ -138,6 +138,53 @@ export default function DateInput({
 
   PillInput.displayName = "PillDateInput";
 
+  const WideInput = forwardRef(({ onClick }, ref) => (
+    <div
+      onClick={onClick}
+      ref={ref}
+      className={`w-full rounded-xl border bg-surface px-4 py-3 text-sm cursor-pointer flex items-center gap-2 shadow-sm hover:bg-surface-alt transition ${
+        error ? "border-red-400" : isOpen ? "border-[var(--color-primary)] ring-2 ring-[var(--color-primary)] ring-opacity-20" : "border-divider"
+      }`}
+    >
+      <Calendar size={16} className="text-text-tertiary shrink-0" />
+      <span className={`flex-1 min-w-0 truncate ${selectedDate ? "text-text" : "text-text-muted"}`}>
+        {selectedDate ? formatDisplayDatePill(selectedDate) : "Selecciona una fecha"}
+      </span>
+      <ChevronDown size={16} className="text-text-tertiary shrink-0" />
+    </div>
+  ));
+
+  WideInput.displayName = "WideDateInput";
+
+  if (variant === "wide") {
+    return (
+      <div>
+        {label && (
+          <label className="block text-sm font-semibold text-text-secondary mb-2 tracking-wide">
+            {label}
+          </label>
+        )}
+        <DatePicker
+          selected={selectedDate}
+          onChange={handleDateChange}
+          onCalendarOpen={() => setIsOpen(true)}
+          onCalendarClose={() => setIsOpen(false)}
+          customInput={<WideInput />}
+          dateFormat="dd/MM/yyyy"
+          locale="es"
+          showPopperArrow={false}
+          popperClassName="date-picker-popper"
+          popperPlacement="bottom-start"
+          calendarClassName="rounded-lg border border-divider shadow-lg"
+          wrapperClassName="w-full"
+          todayButton="Hoy"
+          placeholderText="Selecciona una fecha"
+        />
+        <input type="hidden" name={name} value={value || ""} readOnly />
+      </div>
+    );
+  }
+
   if (variant === "pill") {
     return (
       <div className="flex justify-center">

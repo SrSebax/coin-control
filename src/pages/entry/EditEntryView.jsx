@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation, Link } from "react-router-dom";
 import * as LucideIcons from "lucide-react";
 import Layout from "../../components/Layout";
-import SubmitButton from "../../components/SubmitButton";
 import AmountInput from "../../components/inputs/AmountInput";
 import NameInput from "../../components/inputs/NameInput";
 import SelectInput from "../../components/inputs/SelectInput";
@@ -12,37 +11,38 @@ import ConfirmModal from "../../components/ConfirmModal";
 import ToastMessage from "../../components/ToastMessage";
 import CategoryPickerSheet from "../../components/CategoryPickerSheet";
 import RecurrenceSheet from "../../components/RecurrenceSheet";
+import RecurrencePanel from "../../components/RecurrencePanel";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
   Save,
   ChevronLeft,
   ChevronRight,
-  Eye,
   Tag,
   Plus,
   Repeat,
   X,
+  Check,
+  Pencil,
+  StickyNote,
+  Lightbulb,
+  History,
 } from "lucide-react";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useCategories } from "../../hooks/useCategories";
+import { parseLocalDate } from "../../utils/date";
 import { describeRecurrence } from "../../utils/recurrence";
-import CancelButton from "../../components/CancelButton";
 
-const formatCurrency = (value) => {
-  const n = Number(value || 0);
-  return `$${n.toLocaleString("es-CO", { minimumFractionDigits: 2 })}`;
-};
+const formatRelativeDate = (dateString) => {
+  const date = parseLocalDate(dateString);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
 
-const formatChipDate = (dateString) => {
-  if (!dateString) return null;
-  const [year, month, day] = dateString.split("-");
-  if (!year) return null;
-  return new Date(Number(year), Number(month) - 1, Number(day)).toLocaleDateString("es-ES", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  if (date.toDateString() === today.toDateString()) return "Hoy";
+  if (date.toDateString() === yesterday.toDateString()) return "Ayer";
+  return date.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
 };
 
 export default function EditEntryView() {
@@ -181,6 +181,18 @@ export default function EditEntryView() {
   const categorias = getCategoriesByType(isExpense ? "expense" : "income");
   const selectedCategory = categorias.find((c) => c.id === formData.category) || null;
   const SelectedCategoryIcon = selectedCategory?.icon ? LucideIcons[selectedCategory.icon] : null;
+
+  // Datos para "Movimientos recientes"
+  const expenseCategories = getCategoriesByType("expense");
+  const incomeCategories = getCategoriesByType("income");
+  const getCategoryFor = (t) =>
+    (t.type === "expense" ? expenseCategories : incomeCategories).find((c) => c.id === t.category) ||
+    null;
+
+  const recentTransactions = transactions
+    .filter((t) => !t.recurring && t.id !== entryId)
+    .sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date))
+    .slice(0, 6);
 
   const mobileTitle = isExpense ? "Editar Gasto" : "Editar Ingreso";
 
@@ -348,150 +360,232 @@ export default function EditEntryView() {
         returnTo={`/edit-entry/${entryId}`}
       />
 
-      {/* Escritorio: form + vista previa, mismo patrón que "Registrar movimiento" */}
-      <div className="hidden md:block">
-        <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-6 items-start">
-          <form
-            onSubmit={handleSubmit}
-            className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6"
-          >
+      {/* Escritorio: mismo diseño que "Registrar movimiento", solo cambia la ruta/acción */}
+      <div className="hidden md:block space-y-8">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-surface rounded-3xl shadow-md border border-divider p-8 space-y-8"
+        >
+          <div className="flex items-center gap-3 pb-6 border-b border-divider">
             <span
-              className={`inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 ${
+              className={`inline-flex p-2.5 rounded-full ${
                 isExpense
                   ? "bg-rose-500/15 text-rose-600 dark:text-rose-400"
                   : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
               }`}
             >
-              {isExpense ? <ArrowDownCircle size={14} /> : <ArrowUpCircle size={14} />}
-              Editando {isExpense ? "gasto" : "ingreso"}
+              {isExpense ? <ArrowDownCircle size={22} /> : <ArrowUpCircle size={22} />}
             </span>
-
-            {/* Agrupar Monto y Nombre */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <AmountInput
-                value={formData.amount}
-                onChange={handleChange}
-                onBlur={() => setTouched((prev) => ({ ...prev, amount: true }))}
-                error={isEmpty("amount")}
-              />
-
-              <NameInput
-                value={formData.name}
-                onChange={handleChange}
-                onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
-                error={isEmpty("name")}
-              />
-            </div>
-
-            {/* Agrupar Categoría y Fecha */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SelectInput
-                options={categorias}
-                value={formData.category}
-                onChange={handleChange}
-                onBlur={() => setTouched((prev) => ({ ...prev, category: true }))}
-                error={isEmpty("category")}
-                label="Categoría"
-                name="category"
-                placeholder="Selecciona una categoría"
-                onAddNew={() => handleAddNewCategory()}
-                addNewLabel="Agregar categoría"
-                isObjectOptions={true}
-              />
-
-              <DateInput
-                value={formData.date}
-                onChange={handleChange}
-                onBlur={() => setTouched((prev) => ({ ...prev, date: true }))}
-                error={isEmpty("date")}
-                label="Fecha"
-                name="date"
-              />
-            </div>
-
-            <NoteTextarea value={formData.note} onChange={handleChange} />
-
-            <div className="flex flex-col w-full space-y-2">
-              <CancelButton onClick={handleCancel} sizeClass="w-full mb-2" />
-
-              <SubmitButton
-                label={isExpense ? "Actualizar gasto" : "Actualizar ingreso"}
-                Icon={Save}
-                color={
-                  isExpense
-                    ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
-                    : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
-                }
-                text="text-white"
-                disabled={!isFormValid}
-              />
-            </div>
-          </form>
-
-          {/* Vista previa */}
-          <div className="bg-surface rounded-2xl shadow-md border border-divider p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Eye size={18} className="text-emerald-600 dark:text-emerald-400" />
-              <h3 className="font-semibold text-text">Vista previa</h3>
-            </div>
-
-            <div
-              className={`rounded-xl border p-4 ${
-                isExpense
-                  ? "bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/40"
-                  : "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900/40"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span
-                    className="p-2.5 rounded-full shrink-0"
-                    style={{
-                      backgroundColor: `${selectedCategory?.color || (isExpense ? "#ef4444" : "#10b981")}20`,
-                    }}
-                  >
-                    {SelectedCategoryIcon ? (
-                      <SelectedCategoryIcon size={20} style={{ color: selectedCategory.color }} />
-                    ) : isExpense ? (
-                      <ArrowDownCircle size={20} className="text-rose-500" />
-                    ) : (
-                      <ArrowUpCircle size={20} className="text-emerald-500" />
-                    )}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-xs text-text-tertiary truncate">
-                      {isExpense ? "Gasto" : "Ingreso"}
-                      {selectedCategory ? ` en ${selectedCategory.name}` : ""}
-                    </p>
-                    <p className="font-semibold text-text truncate">
-                      {formData.name || "Sin descripción"}
-                    </p>
-                  </div>
-                </div>
-                <p
-                  className={`font-bold shrink-0 ${
-                    isExpense ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
-                  }`}
-                >
-                  {isExpense ? "-" : "+"}
-                  {formData.amount ? formatCurrency(formData.amount) : "$0,00"}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 mt-3">
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-secondary bg-surface/70 px-2.5 py-1 rounded-lg">
-                  <LucideIcons.Calendar size={12} />
-                  {formatChipDate(formData.date) || "Sin fecha"}
-                </span>
-                {formData.recurring && (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-secondary bg-surface/70 px-2.5 py-1 rounded-lg">
-                    <Repeat size={12} />
-                    {describeRecurrence(formData.recurrence)}
-                  </span>
-                )}
-              </div>
+            <div>
+              <h2 className="font-bold text-text text-lg leading-tight">
+                Editando {isExpense ? "gasto" : "ingreso"}
+              </h2>
+              <p className="text-sm text-text-tertiary mt-0.5">Actualiza los datos y guarda los cambios</p>
             </div>
           </div>
+
+          {/* Monto + fecha */}
+          <div className="grid grid-cols-2 gap-10">
+            <AmountInput
+              variant="wide"
+              label="Monto"
+              value={formData.amount}
+              onChange={handleChange}
+              onBlur={() => setTouched((prev) => ({ ...prev, amount: true }))}
+              error={isEmpty("amount") ? "Ingresa un monto" : undefined}
+              placeholder="0"
+            />
+            <DateInput
+              variant="wide"
+              label="Fecha"
+              value={formData.date}
+              onChange={handleChange}
+              onBlur={() => setTouched((prev) => ({ ...prev, date: true }))}
+              name="date"
+            />
+          </div>
+
+          {/* Tipo de movimiento */}
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() => setActiveTab("gastos")}
+              className={`relative cursor-pointer text-left rounded-2xl border-2 p-5 transition-all ${
+                isExpense
+                  ? "border-rose-400 bg-rose-50 dark:bg-rose-950/30 shadow-sm"
+                  : "border-divider bg-surface hover:bg-surface-alt"
+              }`}
+            >
+              <span
+                className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center ${
+                  isExpense ? "bg-rose-500 text-white" : "border-2 border-divider"
+                }`}
+              >
+                {isExpense && <Check size={12} strokeWidth={3} />}
+              </span>
+              <span
+                className={`inline-flex p-2.5 rounded-full mb-3 ${
+                  isExpense ? "bg-rose-500/15 text-rose-600 dark:text-rose-400" : "bg-surface-alt text-text-tertiary"
+                }`}
+              >
+                <ArrowDownCircle size={20} />
+              </span>
+              <p className={`font-semibold ${isExpense ? "text-rose-600 dark:text-rose-400" : "text-text"}`}>
+                Gasto
+              </p>
+              <p className="text-xs text-text-tertiary mt-0.5">Dinero que sale</p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("ingresos")}
+              className={`relative cursor-pointer text-left rounded-2xl border-2 p-5 transition-all ${
+                !isExpense
+                  ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 shadow-sm"
+                  : "border-divider bg-surface hover:bg-surface-alt"
+              }`}
+            >
+              <span
+                className={`absolute top-3 right-3 w-5 h-5 rounded-full flex items-center justify-center ${
+                  !isExpense ? "bg-emerald-500 text-white" : "border-2 border-divider"
+                }`}
+              >
+                {!isExpense && <Check size={12} strokeWidth={3} />}
+              </span>
+              <span
+                className={`inline-flex p-2.5 rounded-full mb-3 ${
+                  !isExpense ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-surface-alt text-text-tertiary"
+                }`}
+              >
+                <ArrowUpCircle size={20} />
+              </span>
+              <p className={`font-semibold ${!isExpense ? "text-emerald-600 dark:text-emerald-400" : "text-text"}`}>
+                Ingreso
+              </p>
+              <p className="text-xs text-text-tertiary mt-0.5">Dinero que entra</p>
+            </button>
+          </div>
+
+          {/* Categoría + descripción */}
+          <div className="grid grid-cols-2 gap-6">
+            <SelectInput
+              options={categorias}
+              value={formData.category}
+              onChange={handleChange}
+              onBlur={() => setTouched((prev) => ({ ...prev, category: true }))}
+              error={isEmpty("category")}
+              label="Categoría"
+              name="category"
+              placeholder="Selecciona una categoría"
+              onAddNew={() => handleAddNewCategory()}
+              addNewLabel="Agregar categoría"
+              isObjectOptions={true}
+              icon={Tag}
+            />
+
+            <NameInput
+              value={formData.name}
+              onChange={handleChange}
+              onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
+              label="Descripción (opcional)"
+              placeholder={isExpense ? "¿En qué gastaste?" : "¿De dónde proviene?"}
+              maxLength={100}
+              icon={Pencil}
+            />
+          </div>
+
+          {/* Nota */}
+          <NoteTextarea value={formData.note} onChange={handleChange} className="" maxLength={200} icon={StickyNote} />
+
+          {/* Recurrente: card propia, debajo de la nota, opciones inline (sin bottom sheet) */}
+          <RecurrencePanel
+            value={formData.recurring ? formData.recurrence : null}
+            transactionDate={formData.date}
+            onChange={(recurrence) => setFormData((prev) => ({ ...prev, recurring: true, recurrence }))}
+            onRemove={() => setFormData((prev) => ({ ...prev, recurring: false, recurrence: null }))}
+          />
+
+          {/* Acciones */}
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={!isFormValid}
+              className={`cursor-pointer shrink-0 inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl font-semibold text-sm text-white shadow-md hover:shadow-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                isExpense
+                  ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
+                  : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
+              }`}
+            >
+              <Save size={18} />
+              Actualizar movimiento
+            </button>
+          </div>
+        </form>
+
+        {/* Consejo: entre el form y los movimientos recientes */}
+        <div className="flex items-start gap-3 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl p-4">
+          <span className="text-emerald-600 dark:text-emerald-400 shrink-0">
+            <Lightbulb size={18} />
+          </span>
+          <div className="min-w-0">
+            <p className="font-semibold text-sm text-text">Consejo</p>
+            <p className="text-xs text-text-secondary mt-0.5">
+              Lleva un registro constante de tus movimientos para tener un mejor control de tus finanzas.
+            </p>
+          </div>
+        </div>
+
+        {/* Movimientos recientes: abajo, a todo el ancho, como tarjetas clickeables */}
+        <div className="bg-surface rounded-2xl shadow-md border border-divider p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <History size={18} className="text-emerald-600 dark:text-emerald-400" />
+              <h3 className="font-semibold text-text">Movimientos recientes</h3>
+            </div>
+            <Link
+              to="/select-entry"
+              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline"
+            >
+              Ver todos <ChevronRight size={12} />
+            </Link>
+          </div>
+
+          {recentTransactions.length === 0 ? (
+            <p className="text-sm text-text-tertiary text-center py-4">Sin movimientos registrados.</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-3">
+              {recentTransactions.map((t) => {
+                const category = getCategoryFor(t);
+                const isTExpense = t.type === "expense";
+                const TIcon = (category?.icon && LucideIcons[category.icon]) || (isTExpense ? ArrowDownCircle : ArrowUpCircle);
+                const accent = category?.color || (isTExpense ? "#ef4444" : "#10b981");
+
+                return (
+                  <Link
+                    key={t.id}
+                    to={`/edit-entry/${t.id}`}
+                    className="flex items-center gap-3 rounded-xl border border-divider p-3 hover:border-[var(--color-primary)] hover:shadow-sm transition-all"
+                  >
+                    <span className="p-2 rounded-full shrink-0" style={{ backgroundColor: `${accent}20` }}>
+                      <TIcon size={16} style={{ color: accent }} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-text truncate">{t.name || category?.name || "Sin nombre"}</p>
+                      <p className="text-xs text-text-tertiary truncate">{formatRelativeDate(t.date)}</p>
+                    </div>
+                    <span
+                      className={`text-sm font-semibold shrink-0 ${
+                        isTExpense ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
+                      }`}
+                    >
+                      {isTExpense ? "-" : "+"}
+                      {Math.round(t.amount).toLocaleString("es-CO")}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 

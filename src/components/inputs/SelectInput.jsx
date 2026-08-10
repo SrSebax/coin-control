@@ -13,7 +13,8 @@ export default function SelectInput({
   placeholder = "Selecciona una opción",
   onAddNew = null,
   addNewLabel = "Agregar nuevo",
-  isObjectOptions = false
+  isObjectOptions = false,
+  icon: Icon = null
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState("");
@@ -122,7 +123,9 @@ export default function SelectInput({
         }`}
       >
         <div className="flex items-center">
-          {selectedOption && isObjectOptions && renderIcon(selectedOption)}
+          {selectedOption && isObjectOptions
+            ? renderIcon(selectedOption)
+            : Icon && <Icon size={18} className="mr-2 text-text-muted shrink-0" />}
           <span className={selectedLabel ? "text-text" : "text-text-muted"}>
             {selectedLabel || placeholder}
           </span>

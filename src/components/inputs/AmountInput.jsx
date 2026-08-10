@@ -47,6 +47,37 @@ export default function AmountInput({
     if (value) setAmountFormatted(formatToCurrency(value));
   }, [value, locale, formatToCurrency]);
 
+  if (variant === "wide") {
+    return (
+      <div className={className}>
+        {label && (
+          <label className="block text-sm font-semibold text-text-secondary mb-2 tracking-wide">
+            {label}
+          </label>
+        )}
+        <div className="flex items-baseline gap-2 border-b-2 border-divider focus-within:border-[var(--color-primary)] pb-2 transition-colors">
+          {currencySymbol && (
+            <span className="text-2xl font-bold text-emerald-500 dark:text-emerald-400 shrink-0">
+              {currencySymbol}
+            </span>
+          )}
+          <input
+            type="text"
+            inputMode="numeric"
+            name={name}
+            value={amountFormatted}
+            onChange={handleAmountChange}
+            onBlur={onBlur}
+            placeholder={placeholder}
+            autoFocus={autoFocus}
+            className="flex-1 min-w-0 bg-transparent border-none outline-none text-4xl font-bold text-text placeholder-text-muted/40"
+          />
+        </div>
+        {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
+      </div>
+    );
+  }
+
   if (variant === "hero") {
     return (
       <div className={className}>

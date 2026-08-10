@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import SidebarToggle from "./SidebarToggle";
 import UserActions from "./UserActions";
 import ThemeToggle from "./ThemeToggle";
@@ -8,6 +9,7 @@ import logoIconLight from "../assets/favicon-light.svg";
 
 export default function Navbar({ toggleSidebar, title, subtitle, showTitleOnMobile, hideHeaderActions, scrolled }) {
   const { isDark } = useTheme();
+  const navigate = useNavigate();
 
   // Mobile: transparente arriba del todo, efecto "liquid glass" al hacer scroll.
   // Desktop mantiene el fondo sólido de siempre (los md: pisan lo anterior).
@@ -15,13 +17,35 @@ export default function Navbar({ toggleSidebar, title, subtitle, showTitleOnMobi
     ? "bg-[var(--color-surface)]/70 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/20 dark:border-white/10 shadow-[0_1px_24px_rgba(0,0,0,0.10)] dark:shadow-[0_1px_24px_rgba(0,0,0,0.35)]"
     : "bg-transparent backdrop-blur-0 border-b border-transparent shadow-none";
 
+  const desktopGlassClasses = scrolled
+    ? "md:bg-[var(--color-surface)]/70 md:backdrop-blur-2xl md:backdrop-saturate-150 md:border-divider/60 md:shadow-[0_1px_24px_rgba(0,0,0,0.10)] dark:md:shadow-[0_1px_24px_rgba(0,0,0,0.35)]"
+    : "md:bg-transparent md:backdrop-blur-0 md:border-transparent md:shadow-none";
+
   return (
     <header
-      className={`absolute top-0 left-0 right-0 z-20 h-16 px-4 md:px-6 flex items-center gap-4 transition-all duration-300 ${glassClasses} md:bg-[var(--color-background)]/90 md:backdrop-blur-md md:border-divider/60 md:shadow-none`}
+      className={`absolute top-0 left-0 right-0 z-20 h-16 px-4 md:px-6 flex items-center gap-4 transition-all duration-300 ${glassClasses} ${desktopGlassClasses}`}
     >
       {/* Lado izquierdo */}
       <div className="flex items-center gap-2 shrink-0">
         <SidebarToggle toggleSidebar={toggleSidebar} />
+        <div className="hidden md:flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            aria-label="Retroceder"
+            className="cursor-pointer inline-flex items-center justify-center p-2 rounded-md text-text-secondary hover:text-text hover:bg-hover transition-colors"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(1)}
+            aria-label="Adelantar"
+            className="cursor-pointer inline-flex items-center justify-center p-2 rounded-md text-text-secondary hover:text-text hover:bg-hover transition-colors"
+          >
+            <ArrowRight size={18} />
+          </button>
+        </div>
         <Link to="/home" className="md:hidden shrink-0" aria-label="Inicio">
           <img src={isDark ? logoIconDark : logoIconLight} alt="CoinControl" className="w-10 h-10 rounded-xl" />
         </Link>

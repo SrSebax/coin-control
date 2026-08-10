@@ -15,7 +15,8 @@ export default function NameInput({
   minLength,
   pattern,
   readOnly = false,
-  variant = "default"
+  variant = "default",
+  icon: Icon = null
 }) {
   if (variant === "flat") {
     return (
@@ -47,24 +48,27 @@ export default function NameInput({
       <label className="block text-sm font-semibold text-text-secondary mb-2 tracking-wide">
         {label}
       </label>
-      <input
-        type={type}
-        name={name}
-        value={value}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={placeholder}
-        required={required}
-        disabled={disabled}
-        autoFocus={autoFocus}
-        maxLength={maxLength}
-        minLength={minLength}
-        pattern={pattern}
-        readOnly={readOnly}
-        className={`w-full rounded-xl border bg-surface px-4 py-3 text-sm text-text placeholder-text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition ${
-          error ? "border-red-400" : "border-divider"
-        } ${disabled ? "bg-hover cursor-not-allowed" : ""}`}
-      />
+      <div className="relative">
+        {Icon && <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted shrink-0" />}
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          required={required}
+          disabled={disabled}
+          autoFocus={autoFocus}
+          maxLength={maxLength}
+          minLength={minLength}
+          pattern={pattern}
+          readOnly={readOnly}
+          className={`w-full rounded-xl border bg-surface px-4 py-3 text-sm text-text placeholder-text-muted shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition ${
+            Icon ? "pl-10" : ""
+          } ${error ? "border-red-400" : "border-divider"} ${disabled ? "bg-hover cursor-not-allowed" : ""}`}
+        />
+      </div>
       {maxLength && (
         <p className="mt-1 text-xs text-text-muted text-right">{(value || "").length}/{maxLength}</p>
       )}

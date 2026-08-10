@@ -7,15 +7,16 @@ import {
   Check,
   ChevronLeft,
   Pencil,
+  Receipt,
   Search,
   SlidersHorizontal,
   Tag,
   Trash2,
+  Wallet,
   X,
   XCircle,
 } from "lucide-react";
 import Layout from "../../components/Layout";
-import PageHeading from "../../components/PageHeading";
 import TabsSwitcher from "../../components/TabsSwitcher";
 import ConfirmModal from "../../components/ConfirmModal";
 import EmptyState from "../../components/EmptyState";
@@ -193,7 +194,7 @@ export default function SelectEntryView() {
   );
 
   return (
-    <Layout>
+    <Layout title="Listado de movimientos" >
       {/* Vista mobile: lista compacta con búsqueda y filtro por tipo */}
       <div className="md:hidden pb-4">
         <div className="flex items-center gap-3 -mx-4 px-4 pb-4 mb-4 border-b border-divider">
@@ -406,9 +407,17 @@ export default function SelectEntryView() {
       </div>
 
       {/* Vista de escritorio */}
-      <div className="hidden md:block bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider p-6">
-        <div className="flex items-center justify-between gap-4 mb-5">
-          <PageHeading title="Movimientos" />
+      <div className="hidden md:block bg-surface/90 backdrop-blur-sm rounded-3xl shadow-md border border-divider p-8">
+        <div className="flex items-center justify-between gap-4 pb-6 mb-6 border-b border-divider">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex p-2.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+              <Receipt size={22} />
+            </span>
+            <div>
+              <h2 className="font-bold text-text text-lg leading-tight">Movimientos</h2>
+              <p className="text-sm text-text-tertiary mt-0.5">Busca, filtra y administra tus ingresos y gastos</p>
+            </div>
+          </div>
           <TabsSwitcher activeTab={activeTab} setActiveTab={handleTabChange} />
         </div>
 
@@ -424,12 +433,14 @@ export default function SelectEntryView() {
               className="w-full rounded-xl border border-divider bg-surface-alt pl-10 pr-3 py-2.5 text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition"
             />
           </div>
-          <DateInput
-            value={filterDate}
-            onChange={(e) => setFilterDate(e.target.value)}
-            name="filterDate"
-            label="Fecha"
-          />
+          <div className="w-64 shrink-0">
+            <DateInput
+              variant="wide"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              name="filterDate"
+            />
+          </div>
           {activeFilterCount > 0 && (
             <button
               type="button"
@@ -442,7 +453,7 @@ export default function SelectEntryView() {
         </div>
 
         {categorias.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mb-6">
+          <div className="flex flex-wrap items-center gap-2 mb-5">
             {categorias.map((category) => {
               const isSelected = filterCategoryIds.includes(category.id);
               return (
@@ -469,12 +480,13 @@ export default function SelectEntryView() {
         )}
 
         {searchedTransactions.length > 0 && (
-          <div className="flex items-center justify-between mb-3 px-1">
-            <p className="text-sm text-text-tertiary">
+          <div className="flex items-center justify-between mb-6 rounded-xl bg-surface-alt px-5 py-3.5">
+            <span className="flex items-center gap-2 text-sm text-text-secondary">
+              <Wallet size={16} className="text-text-tertiary" />
               {searchedTransactions.length} {searchedTransactions.length === 1 ? "movimiento" : "movimientos"}
-            </p>
+            </span>
             <p
-              className={`text-sm font-bold ${
+              className={`text-base font-bold ${
                 isExpense ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
               }`}
             >
@@ -505,13 +517,19 @@ export default function SelectEntryView() {
             iconColor={isExpense ? "text-[var(--color-expense)]" : "text-[var(--color-income)]"}
           />
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-6">
             {groupedTransactions.map((group) => (
               <div key={group.label}>
-                <p className="text-xs font-semibold text-text-tertiary uppercase tracking-wide px-1 mb-2">
-                  {group.label}
-                </p>
-                <div className="rounded-2xl border border-divider divide-y divide-divider overflow-hidden">
+                <div className="flex items-center gap-3 mb-2.5 px-1">
+                  <p className="text-xs font-semibold text-text-tertiary uppercase tracking-wide shrink-0">
+                    {group.label}
+                  </p>
+                  <div className="h-px flex-1 bg-divider" />
+                  <p className="text-xs text-text-muted shrink-0">
+                    {group.items.length} {group.items.length === 1 ? "movimiento" : "movimientos"}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-divider divide-y divide-divider overflow-hidden shadow-sm">
                   {group.items.map((entry) => (
                     <div
                       key={entry.id}

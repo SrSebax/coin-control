@@ -33,8 +33,8 @@ export default function Layout({ children, title, subtitle, showTitleOnMobile, h
           onScroll={handleScroll}
           className="flex-1 overflow-y-auto px-4 pt-20 pb-24 md:px-8 md:pt-20 md:pb-6 relative"
         >
-          {/* Elementos decorativos de fondo */}
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+          {/* Elementos decorativos de fondo (solo mobile: en desktop generan un tinte azul disparejo detrás de las cards) */}
+          <div className="md:hidden absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
             <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-gradient-to-br from-teal-100/30 to-teal-200/20 dark:from-teal-500/10 dark:to-teal-700/5 blur-3xl"></div>
             <div className="absolute bottom-[-15%] left-[-5%] w-[50%] h-[50%] rounded-full bg-gradient-to-tl from-blue-100/20 to-teal-200/10 dark:from-blue-500/10 dark:to-teal-700/5 blur-3xl"></div>
           </div>

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { CheckCircle, XCircle, X } from 'lucide-react';
 
 export default function ToastMessage({ open = false, message, type = 'success', onClose, duration = 5000 }) {
@@ -37,9 +38,11 @@ export default function ToastMessage({ open = false, message, type = 'success', 
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     // Mobile: debajo del navbar (h-16) + safe-area, para no montarse encima
     // del header. Desktop: esquina superior derecha, como antes.
+    // Portal a document.body: si no, queda atrapado en el stacking context
+    // del contenido y el header (con su propio z-index) lo tapa por encima.
     <div className="fixed z-50 inset-x-4 top-[calc(env(safe-area-inset-top)+76px)] md:inset-x-auto md:top-4 md:right-4 md:w-96 animate-in fade-in zoom-in-95 duration-200">
       <div className={`flex items-center gap-3 p-4 rounded-2xl border shadow-lg ${getStyles()}`}>
         {getIcon()}
@@ -52,6 +55,7 @@ export default function ToastMessage({ open = false, message, type = 'success', 
           <X size={16} />
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

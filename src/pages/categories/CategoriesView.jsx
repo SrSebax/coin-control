@@ -3,16 +3,12 @@ import { useNavigate } from "react-router-dom";
 import * as LucideIcons from "lucide-react";
 import Layout from "../../components/Layout";
 import TabsSwitcher from "../../components/TabsSwitcher";
-import PageHeading from "../../components/PageHeading";
+import CategoryPreview from "../../components/CategoryPreview";
 import NameInput from "../../components/inputs/NameInput";
-import ColorInput from "../../components/inputs/ColorInput";
-import IconInput from "../../components/inputs/IconInput";
-import SubmitButton from "../../components/SubmitButton";
-import CancelButton from "../../components/CancelButton";
+import IconColorInput from "../../components/inputs/IconColorInput";
 import ConfirmModal from "../../components/ConfirmModal";
-import { ChevronLeft, Pencil, Plus, Search, Tag, Trash2 } from "lucide-react";
+import { ChevronLeft, FolderPlus, Layers, Loader2, Pencil, Plus, Search, Tag, Trash2 } from "lucide-react";
 import { useCategories } from "../../hooks/useCategories";
-import CategoryGridCard from "../../components/CategoryGridCard";
 
 const DEFAULT_COLOR = "#10b981";
 const DEFAULT_ICON = "Tag";
@@ -157,7 +153,7 @@ export default function CategoriesView() {
   };
 
   return (
-    <Layout>
+    <Layout title={isEditing ? "Editar categoría" : "Nueva categoría"} subtitle="Crea y administra tus categorías de ingresos y gastos">
       {/* Mobile: lista de categorías con buscador */}
       <div className="md:hidden">
         <div className="flex items-center gap-3 -mx-4 px-4 pb-4 mb-4 border-b border-divider">
@@ -263,18 +259,30 @@ export default function CategoriesView() {
         )}
       </div>
 
-      {/* Escritorio: formulario + categorías existentes */}
-      <div className="hidden md:grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-6 items-start">
-        <div className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
-          <div className="text-center sm:text-left">
-            <PageHeading
-              title={isEditing ? "Editar categoría" : "Registrar nueva categoría"}
-            />
+      {/* Escritorio: mismo lenguaje visual que "Registrar movimiento" */}
+      <div className="hidden md:block space-y-8">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-surface rounded-3xl shadow-md border border-divider p-8 space-y-8"
+        >
+          <div className="flex items-center justify-between gap-4 pb-6 border-b border-divider">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex p-2.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                <FolderPlus size={22} />
+              </span>
+              <div>
+                <h2 className="font-bold text-text text-lg leading-tight">
+                  {isEditing ? "Editar categoría" : "Nueva categoría"}
+                </h2>
+                <p className="text-sm text-text-tertiary mt-0.5">Completa la información para {isEditing ? "actualizarla" : "crearla"}</p>
+              </div>
+            </div>
             <TabsSwitcher activeTab={activeTab} setActiveTab={handleTabChange} />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex flex-col space-y-6">
+          <div className="flex items-center gap-6">
+            <CategoryPreview icon={formData.icon} color={formData.color} />
+            <div className="flex-1 min-w-0">
               <NameInput
                 value={formData.name}
                 onChange={handleChange}
@@ -282,54 +290,52 @@ export default function CategoriesView() {
                 error={isEmpty("name")}
                 label="Nombre de categoría"
                 placeholder="Ej: Salud"
-              />
-
-              <ColorInput
-                value={formData.color}
-                onChange={handleChange}
-                onBlur={() => setTouched((prev) => ({ ...prev, color: true }))}
-                error={isEmpty("color")}
-              />
-
-              <IconInput
-                value={formData.icon}
-                onChange={handleChange}
-                onBlur={() => setTouched((prev) => ({ ...prev, icon: true }))}
-                error={isEmpty("icon")}
+                icon={Tag}
               />
             </div>
+          </div>
 
-            <div className="flex flex-col w-full">
-              {isEditing && (
-                <CancelButton
-                  onClick={resetForm}
-                  sizeClass="w-full mb-2"
-                />
-              )}
+          <IconColorInput
+            icon={formData.icon}
+            color={formData.color}
+            onChange={handleChange}
+            error={isEmpty("color") || isEmpty("icon")}
+          />
 
-              <SubmitButton
-                label={isEditing ? "Actualizar categoría" : "Guardar categoría"}
-                Icon={Plus}
-                color={
-                  isExpense
-                    ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
-                    : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
-                }
-                text="text-white"
-                disabled={!isFormValid || isSubmitting}
-                loading={isSubmitting}
-                sizeClass="w-full"
-              />
-            </div>
-          </form>
-        </div>
+          <div className="flex items-center justify-end gap-3 pt-2">
+            {isEditing && (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="cursor-pointer shrink-0 inline-flex items-center justify-center gap-2 py-3 px-5 rounded-2xl font-semibold text-sm text-text-secondary bg-hover border border-divider hover:bg-active transition"
+              >
+                Cancelar
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={!isFormValid || isSubmitting}
+              className={`cursor-pointer shrink-0 inline-flex items-center justify-center gap-2 py-3 px-6 rounded-2xl font-semibold text-sm text-white shadow-md hover:shadow-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                isExpense
+                  ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
+                  : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
+              }`}
+            >
+              {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+              {isSubmitting ? "Guardando..." : isEditing ? "Actualizar categoría" : "Guardar categoría"}
+            </button>
+          </div>
+        </form>
 
         {/* Categorías existentes */}
         <div className="bg-surface rounded-2xl shadow-md border border-divider p-6">
           <div className="flex items-center justify-between gap-3 mb-4">
-            <h3 className="font-semibold text-text">
-              Categorías existentes <span className="text-text-tertiary font-normal">({filteredCategories.length})</span>
-            </h3>
+            <div className="flex items-center gap-2">
+              <Layers size={18} className="text-emerald-600 dark:text-emerald-400" />
+              <h3 className="font-semibold text-text">
+                Categorías existentes <span className="text-text-tertiary font-normal">({filteredCategories.length})</span>
+              </h3>
+            </div>
           </div>
 
           <div className="relative mb-4">
@@ -348,17 +354,40 @@ export default function CategoriesView() {
               {searchTerm ? `Sin resultados para "${searchTerm}".` : "Sin categorías todavía."}
             </p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {filteredCategories.map((category) => (
-                <CategoryGridCard
-                  key={category.id}
-                  item={category}
-                  onEdit={() => handleEditCategory(category)}
-                  onDelete={handleDeleteClick}
-                  defaultIconName="Tag"
-                  defaultColor={isExpense ? "var(--color-expense)" : "var(--color-income)"}
-                />
-              ))}
+            <div className="flex flex-wrap gap-2">
+              {filteredCategories.map((category) => {
+                const Icon = (category.icon && LucideIcons[category.icon]) || Tag;
+                const accent = category.color || "#94a3b8";
+                return (
+                  <div
+                    key={category.id}
+                    className="group inline-flex items-center gap-2 rounded-full border border-divider bg-surface-alt pl-1.5 pr-1 py-1 hover:border-[var(--color-primary)] transition-colors"
+                  >
+                    <span className="p-1.5 rounded-full shrink-0" style={{ backgroundColor: `${accent}20` }}>
+                      <Icon size={14} style={{ color: accent }} />
+                    </span>
+                    <span className="text-sm font-medium text-text">{category.name}</span>
+                    <div className="flex items-center gap-0.5 ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() => handleEditCategory(category)}
+                        aria-label={`Editar ${category.name}`}
+                        className="cursor-pointer p-1 rounded-full text-text-tertiary hover:text-emerald-600 hover:bg-active transition-colors"
+                      >
+                        <Pencil size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteClick(category)}
+                        aria-label={`Eliminar ${category.name}`}
+                        className="cursor-pointer p-1 rounded-full text-text-tertiary hover:text-red-500 hover:bg-active transition-colors"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

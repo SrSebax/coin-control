@@ -194,7 +194,7 @@ export default function SelectEntryView() {
   );
 
   return (
-    <Layout title="Listado de movimientos" >
+    <Layout title="Seleccionar movimiento" subtitle="Elegí un movimiento para editarlo o eliminarlo">
       {/* Vista mobile: lista compacta con búsqueda y filtro por tipo */}
       <div className="md:hidden pb-4">
         <div className="flex items-center gap-3 -mx-4 px-4 pb-4 mb-4 border-b border-divider">

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Folder } from "lucide-react";
+import { Folder, Search } from "lucide-react";
 import Layout from "../../components/Layout";
 import PageHeading from "../../components/PageHeading";
 import TabsSwitcher from "../../components/TabsSwitcher";
@@ -63,16 +63,22 @@ export default function SelectCategoryView() {
     navigate('/categories', { state: { type: isExpense ? 'expense' : 'income' } });
   };
   
+  const [searchTerm, setSearchTerm] = useState("");
+
   const categoryList = categories[typeKey] || [];
-  
+  const filteredCategoryList = categoryList.filter((c) =>
+    c.name.toLowerCase().includes(searchTerm.trim().toLowerCase())
+  );
+
   return (
-    <Layout>
-      <div className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
+    <Layout title="Seleccionar categoría" subtitle="Elegí una categoría para editarla o eliminarla">
+      {/* Mobile: sin cambios */}
+      <div className="md:hidden bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
         <div className="text-center sm:text-left">
           <PageHeading title="Seleccionar categoría" />
           <TabsSwitcher activeTab={activeTab} setActiveTab={handleTabChange} />
         </div>
-        
+
         {categoryList.length === 0 ? (
           <EmptyState
             icon={Folder}
@@ -104,7 +110,68 @@ export default function SelectCategoryView() {
           </div>
         )}
       </div>
-      
+
+      {/* Escritorio: mismo lenguaje visual que "Movimientos" */}
+      <div className="hidden md:block bg-surface/90 backdrop-blur-sm rounded-3xl shadow-md border border-divider p-8">
+        <div className="flex items-center justify-between gap-4 pb-6 mb-6 border-b border-divider">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex p-2.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+              <Folder size={22} />
+            </span>
+            <div>
+              <h2 className="font-bold text-text text-lg leading-tight">Seleccionar categoría</h2>
+              <p className="text-sm text-text-tertiary mt-0.5">Elegí una categoría para editarla o eliminarla</p>
+            </div>
+          </div>
+          <TabsSwitcher activeTab={activeTab} setActiveTab={handleTabChange} />
+        </div>
+
+        <div className="relative mb-6">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Buscar categoría..."
+            className="w-full rounded-xl border border-divider bg-surface-alt pl-10 pr-3 py-2.5 text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition"
+          />
+        </div>
+
+        {categoryList.length === 0 ? (
+          <EmptyState
+            icon={Folder}
+            title="No hay categorías registradas"
+            message={`No has creado ninguna categoría de ${isExpense ? 'gastos' : 'ingresos'} todavía`}
+            buttonText="Crear categoría"
+            buttonPath="/categories"
+            buttonColor={isExpense ? "bg-[var(--color-button-expense)]" : "bg-[var(--color-button-income)]"}
+          />
+        ) : filteredCategoryList.length === 0 ? (
+          <p className="text-sm text-text-tertiary text-center py-10">
+            Sin resultados para "{searchTerm}".
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {filteredCategoryList.map((category) => (
+              <CategoryGridCard
+                key={category.id}
+                item={category}
+                onEdit={handleEditCategory}
+                onDelete={handleDeleteClick}
+                defaultIconName="Folder"
+                defaultColor={isExpense ? "var(--color-expense)" : "var(--color-income)"}
+              />
+            ))}
+
+            <CategoryGridCard
+              isAddButton={true}
+              onAdd={handleAddCategory}
+              addText="Añadir categoría"
+            />
+          </div>
+        )}
+      </div>
+
       <ConfirmModal
         open={confirmModal.open}
         title={confirmModal.title}

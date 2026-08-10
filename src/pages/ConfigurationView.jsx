@@ -1,6 +1,5 @@
 import { useRef, useState } from "react";
 import Layout from "../components/Layout";
-import SelectInput from "../components/inputs/SelectInput";
 import ConfirmModal from "../components/ConfirmModal";
 import ToastMessage from "../components/ToastMessage";
 import {
@@ -9,7 +8,6 @@ import {
   Laptop,
   Globe,
   Bell,
-  Shield,
   LogOut,
   Download,
   Upload,
@@ -47,7 +45,7 @@ export default function ConfigurationView() {
   const { amount: budgetAmount, setBudgetAmount } = useBudget();
   const { isInstalled, isInstallable, isIOS, promptInstall } = usePwaInstall();
 
-  const [language, setLanguage] = useState("es");
+  const [language] = useState("es");
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
@@ -55,19 +53,6 @@ export default function ConfigurationView() {
   const [toast, setToast] = useState(null);
   const fileInputRef = useRef(null);
 
-  const themeOptions = [
-    { id: "light", name: "Tema Claro", icon: "Sun" },
-    { id: "dark", name: "Tema Oscuro", icon: "Moon" },
-    { id: "system", name: "Usar configuración del sistema", icon: "Laptop" },
-  ];
-
-  const languageOptions = [
-    { id: "es", name: "Español", icon: "Globe" },
-    { id: "en", name: "English", icon: "Globe" },
-  ];
-
-  const handleThemeChange = (e) => setTheme(e.target.value);
-  const handleLanguageChange = (e) => setLanguage(e.target.value);
   const handleToggleNotifications = () => setNotificationsEnabled((v) => !v);
 
   const initial = (displayName || user?.email || "U")[0].toUpperCase();
@@ -400,93 +385,246 @@ export default function ConfigurationView() {
         </div>
       </div>
 
-      {/* Escritorio: sin cambios */}
-      <div className="hidden md:block bg-surface/90 backdrop-blur-sm rounded-2xl shadow-lg border border-divider p-6 space-y-8 transition-all duration-300 hover:shadow-xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Sección de Apariencia */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-50 dark:bg-blue-950/40 rounded-lg text-blue-600 dark:text-blue-300">
-                <Sun size={20} />
-              </div>
-              <h3 className="text-lg font-bold text-text">Apariencia</h3>
-            </div>
-
-            <div className="space-y-4">
-              <SelectInput
-                label="Tema"
-                name="theme"
-                value={theme}
-                onChange={handleThemeChange}
-                options={themeOptions}
-                isObjectOptions={true}
+      {/* Escritorio: paridad con mobile */}
+      <div className="hidden md:block space-y-6">
+        {/* Perfil */}
+        <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider p-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            {user?.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt=""
+                referrerPolicy="no-referrer"
+                className="shrink-0 w-14 h-14 rounded-2xl object-cover shadow-md"
               />
+            ) : (
+              <span className="shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center text-xl font-bold shadow-md">
+                {initial}
+              </span>
+            )}
+            <div>
+              <p className="text-lg font-bold text-text">{displayName || "Usuario"}</p>
+              <p className="text-sm text-text-tertiary">{user?.email || ""}</p>
             </div>
           </div>
+          <button
+            onClick={() => setShowLogoutModal(true)}
+            className="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-300 rounded-xl text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors"
+          >
+            <LogOut size={16} /> Cerrar sesión
+          </button>
+        </div>
 
-          {/* Sección de Idioma */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          {/* Columna izquierda */}
           <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-green-50 dark:bg-green-950/40 rounded-lg text-green-600 dark:text-green-300">
-                <Globe size={20} />
+            {/* Apariencia */}
+            <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Sun size={18} className="text-text-tertiary" />
+                <h3 className="font-semibold text-text">Apariencia</h3>
               </div>
-              <h3 className="text-lg font-bold text-text">Idioma</h3>
-            </div>
-
-            <div className="space-y-4">
-              <SelectInput
-                label="Idioma"
-                name="language"
-                value={language}
-                onChange={handleLanguageChange}
-                options={languageOptions}
-                isObjectOptions={true}
-              />
-            </div>
-          </div>
-
-          {/* Sección de Perfil */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-purple-50 dark:bg-purple-950/40 rounded-lg text-purple-600 dark:text-purple-300">
-                <Shield size={20} />
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: "light", label: "Claro", icon: Sun },
+                  { id: "dark", label: "Oscuro", icon: Moon },
+                  { id: "system", label: "Sistema", icon: Laptop },
+                ].map((opt) => {
+                  const ThemeIcon = opt.icon;
+                  const isSelected = theme === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setTheme(opt.id)}
+                      className={`cursor-pointer flex flex-col items-center gap-1.5 py-3 rounded-xl text-xs font-semibold transition-colors ${
+                        isSelected ? "bg-emerald-500 text-white" : "bg-surface-alt text-text-secondary hover:bg-hover"
+                      }`}
+                    >
+                      <ThemeIcon size={16} />
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
-              <h3 className="text-lg font-bold text-text">Perfil de Usuario</h3>
             </div>
 
-            <div className="p-4 bg-surface-alt rounded-xl border border-divider space-y-1">
-              <p className="text-sm font-medium text-text">{displayName || "Usuario"}</p>
-              <p className="text-sm text-text-secondary">{user?.email || ""}</p>
-            </div>
-
-            <button
-              onClick={() => setShowLogoutModal(true)}
-              className="cursor-pointer w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-300 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors"
-            >
-              <LogOut size={16} /> Cerrar sesión
-            </button>
-          </div>
-
-          {/* Sección de Notificaciones */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-amber-50 dark:bg-amber-950/40 rounded-lg text-amber-600 dark:text-amber-300">
-                <Bell size={20} />
+            {/* Idioma */}
+            <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Globe size={18} className="text-text-tertiary" />
+                <h3 className="font-semibold text-text">Idioma</h3>
+                <span className="ml-auto text-[10px] font-semibold uppercase tracking-wide text-text-tertiary bg-surface-alt px-2 py-0.5 rounded-full">
+                  Próximamente
+                </span>
               </div>
-              <h3 className="text-lg font-bold text-text">Notificaciones</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: "es", label: "Español" },
+                  { id: "en", label: "English" },
+                ].map(({ id, label }) => {
+                  const isSelected = language === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      disabled
+                      className={`cursor-not-allowed opacity-50 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                        isSelected ? "bg-emerald-500 text-white" : "bg-surface-alt text-text-secondary"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-surface-alt rounded-xl border border-divider">
-              <span className="text-sm text-text-secondary">Activar notificaciones</span>
+            {/* Notificaciones */}
+            <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider p-6 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Bell size={18} className="text-text-tertiary shrink-0" />
+                <p className="text-sm font-medium text-text">Notificaciones</p>
+              </div>
               <button
+                type="button"
+                role="switch"
+                aria-checked={notificationsEnabled}
                 onClick={handleToggleNotifications}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notificationsEnabled ? 'bg-green-500' : 'bg-active'}`}
+                className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  notificationsEnabled ? "bg-emerald-500" : "bg-hover"
+                }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-surface transition-transform ${notificationsEnabled ? 'translate-x-6' : 'translate-x-1'}`}
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    notificationsEnabled ? "translate-x-6" : "translate-x-1"
+                  }`}
                 />
               </button>
             </div>
+          </div>
+
+          {/* Columna derecha */}
+          <div className="space-y-6">
+            {/* Datos */}
+            <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider divide-y divide-divider overflow-hidden">
+              <button
+                type="button"
+                onClick={() => navigate("/recurring-movements")}
+                className="cursor-pointer w-full flex items-center justify-between p-4 hover:bg-hover transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Repeat size={16} className="text-text-tertiary shrink-0" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-text">Movimientos recurrentes</p>
+                    <p className="text-xs text-text-tertiary">Revisa y edita tus programaciones automáticas</p>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="text-text-muted shrink-0" />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExport}
+                className="cursor-pointer w-full flex items-center justify-between p-4 hover:bg-hover transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Download size={16} className="text-text-tertiary shrink-0" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-text">Exportar datos</p>
+                    <p className="text-xs text-text-tertiary">Descarga un respaldo de tus movimientos y categorías</p>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="text-text-muted shrink-0" />
+              </button>
+
+              <button
+                type="button"
+                onClick={handleImportClick}
+                className="cursor-pointer w-full flex items-center justify-between p-4 hover:bg-hover transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Upload size={16} className="text-text-tertiary shrink-0" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-text">Importar datos</p>
+                    <p className="text-xs text-text-tertiary">Restaura un respaldo previamente exportado</p>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="text-text-muted shrink-0" />
+              </button>
+            </div>
+
+            {/* App */}
+            <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider overflow-hidden">
+              {isInstalled ? (
+                <div className="w-full flex items-center gap-2.5 p-4">
+                  <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-text">App instalada</p>
+                    <p className="text-xs text-text-tertiary">¡Gracias por instalar CoinControl!</p>
+                  </div>
+                </div>
+              ) : isInstallable ? (
+                <button
+                  type="button"
+                  onClick={promptInstall}
+                  className="cursor-pointer w-full flex items-center justify-between p-4 hover:bg-hover transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Smartphone size={16} className="text-text-tertiary shrink-0" />
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-text">Instalar app</p>
+                      <p className="text-xs text-text-tertiary">Instalala en tu computador para acceso rápido</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} className="text-text-muted shrink-0" />
+                </button>
+              ) : isIOS ? (
+                <div className="w-full flex items-center gap-2.5 p-4">
+                  <Share size={16} className="text-text-tertiary shrink-0" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-text">Descargar app</p>
+                    <p className="text-xs text-text-tertiary">
+                      Tocá Compartir y elegí "Agregar a inicio" para instalarla
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full flex items-center gap-2.5 p-4">
+                  <Smartphone size={16} className="text-text-tertiary shrink-0" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-text">Instalar app</p>
+                    <p className="text-xs text-text-tertiary">
+                      Abrí este link desde Chrome para instalarla en tu computador
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center pt-2 pb-4">
+          <p className="text-xs text-text-tertiary mb-1">Desarrollado por Sebastian Londoño</p>
+          <p className="text-xs text-text-tertiary mb-1">Un agradecimiento especial a Ana Naranjo</p>
+          <p className="text-xs text-text-tertiary mb-3">Versión {import.meta.env.VITE_APP_VERSION}</p>
+          <div className="flex items-center justify-center gap-3">
+            {SOCIAL_LINKS.map((social) => {
+              const SocialIcon = social.icon;
+              return (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="p-2.5 rounded-full text-text-tertiary hover:text-text hover:bg-hover transition-colors"
+                >
+                  <SocialIcon size={18} />
+                </a>
+              );
+            })}
           </div>
         </div>
       </div>

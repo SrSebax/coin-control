@@ -6,7 +6,7 @@ import PageHeading from "../../components/PageHeading";
 import TabsSwitcher from "../../components/TabsSwitcher";
 import ConfirmModal from "../../components/ConfirmModal";
 import EmptyState from "../../components/EmptyState";
-import SelectItemCard from "../../components/SelectItemCard";
+import CategoryGridCard from "../../components/CategoryGridCard";
 import { useCategories } from "../../hooks/useCategories";
 
 export default function SelectCategoryView() {
@@ -83,9 +83,9 @@ export default function SelectCategoryView() {
             buttonColor={isExpense ? "bg-[var(--color-button-expense)]" : "bg-[var(--color-button-income)]"}
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {categoryList.map((category) => (
-              <SelectItemCard
+              <CategoryGridCard
                 key={category.id}
                 item={category}
                 onEdit={handleEditCategory}
@@ -94,9 +94,9 @@ export default function SelectCategoryView() {
                 defaultColor={isExpense ? "var(--color-expense)" : "var(--color-income)"}
               />
             ))}
-            
+
             {/* Botón para añadir nueva categoría */}
-            <SelectItemCard
+            <CategoryGridCard
               isAddButton={true}
               onAdd={handleAddCategory}
               addText="Añadir categoría"

@@ -1,13 +1,25 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import * as LucideIcons from "lucide-react";
-import { ArrowDownCircle, ArrowUpCircle, Check, ChevronLeft, Search, SlidersHorizontal, Tag, X, XCircle } from "lucide-react";
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Check,
+  ChevronLeft,
+  Pencil,
+  Search,
+  SlidersHorizontal,
+  Tag,
+  Trash2,
+  X,
+  XCircle,
+} from "lucide-react";
 import Layout from "../../components/Layout";
 import PageHeading from "../../components/PageHeading";
 import TabsSwitcher from "../../components/TabsSwitcher";
 import ConfirmModal from "../../components/ConfirmModal";
 import EmptyState from "../../components/EmptyState";
-import EntryCard from "../../components/EntryCard";
+import MovementRow from "../../components/MovementRow";
 import ModalPortal from "../../components/ModalPortal";
 import SwipeableRow from "../../components/SwipeableRow";
 import DateInput from "../../components/inputs/DateInput";
@@ -169,33 +181,6 @@ export default function SelectEntryView() {
   );
 
   const groupedTransactions = useMemo(() => groupByDate(searchedTransactions), [searchedTransactions]);
-
-  // Renderizar contenido adicional para cada movimiento (vista de escritorio)
-  const renderEntryContent = (entry) => {
-    return (
-      <>
-        {entry.note && (
-          <p className="text-sm text-text-secondary italic">{entry.note}</p>
-        )}
-      </>
-    );
-  };
-
-  // Modificar los datos de entrada para que sean compatibles con EntryCard (vista de escritorio)
-  const prepareEntryData = (entry) => {
-    return {
-      ...entry,
-      titleInfo: (
-        <p className="text-sm text-text-tertiary flex items-center gap-1">
-          <span className="font-medium">{formatDate(entry.date)}</span>
-          <span className="text-text-muted">•</span>
-          <span>{entry.category}</span>
-        </p>
-      ),
-      rightContent: <span>{formatCurrency(entry.amount)}</span>,
-      icon: isExpense ? "ArrowDownCircle" : "ArrowUpCircle",
-    };
-  };
 
   return (
     <Layout>
@@ -410,41 +395,150 @@ export default function SelectEntryView() {
         )}
       </div>
 
-      {/* Vista de escritorio: sin cambios */}
-      <div className="hidden md:block bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
-        <div className="text-center sm:text-left">
-          <PageHeading title="Seleccionar movimiento" />
+      {/* Vista de escritorio */}
+      <div className="hidden md:block bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider p-6">
+        <div className="flex items-center justify-between gap-4 mb-5">
+          <PageHeading title="Movimientos" />
           <TabsSwitcher activeTab={activeTab} setActiveTab={handleTabChange} />
         </div>
 
-        {filteredTransactions.length === 0 ? (
+        {/* Barra de búsqueda y filtros */}
+        <div className="flex flex-wrap items-end gap-3 mb-5">
+          <div className="relative flex-1 min-w-[220px]">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar movimiento..."
+              className="w-full rounded-xl border border-divider bg-surface-alt pl-10 pr-3 py-2.5 text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition"
+            />
+          </div>
+          <DateInput
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+            name="filterDate"
+            label="Fecha"
+          />
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="cursor-pointer inline-flex items-center gap-1 text-sm font-medium text-text-tertiary hover:text-text pb-2.5"
+            >
+              <XCircle size={14} /> Limpiar filtros
+            </button>
+          )}
+        </div>
+
+        {categorias.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mb-6">
+            {categorias.map((category) => {
+              const isSelected = filterCategoryIds.includes(category.id);
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => toggleFilterCategory(category.id)}
+                  className={`cursor-pointer inline-flex items-center gap-1.5 text-xs font-medium rounded-full pl-2.5 pr-3 py-1.5 border transition-colors ${
+                    isSelected
+                      ? "border-[var(--color-primary)] bg-surface-alt text-text"
+                      : "border-divider text-text-secondary hover:bg-hover"
+                  }`}
+                >
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: category.color || "#94a3b8" }}
+                  />
+                  {category.name}
+                  {isSelected && <Check size={12} strokeWidth={3} />}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {searchedTransactions.length > 0 && (
+          <div className="flex items-center justify-between mb-3 px-1">
+            <p className="text-sm text-text-tertiary">
+              {searchedTransactions.length} {searchedTransactions.length === 1 ? "movimiento" : "movimientos"}
+            </p>
+            <p
+              className={`text-sm font-bold ${
+                isExpense ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
+              }`}
+            >
+              {isExpense ? "-" : "+"}
+              {formatCurrency(totalAmount)}
+            </p>
+          </div>
+        )}
+
+        {searchedTransactions.length === 0 ? (
           <EmptyState
             icon={isExpense ? ArrowDownCircle : ArrowUpCircle}
-            title={`No hay ${isExpense ? "gastos" : "ingresos"} registrados`}
-            message={`No has registrado ningún ${isExpense ? "gasto" : "ingreso"} todavía`}
+            title={
+              search || activeFilterCount > 0
+                ? "Sin resultados"
+                : `No hay ${isExpense ? "gastos" : "ingresos"} registrados`
+            }
+            message={
+              search
+                ? `No encontramos movimientos para "${search}"`
+                : activeFilterCount > 0
+                ? "No hay movimientos que coincidan con los filtros aplicados"
+                : `No has registrado ningún ${isExpense ? "gasto" : "ingreso"} todavía`
+            }
             buttonText={`Registrar ${isExpense ? "gasto" : "ingreso"}`}
             buttonPath="/new-entry"
             buttonColor={isExpense ? "bg-[var(--color-button-expense)]" : "bg-[var(--color-button-income)]"}
             iconColor={isExpense ? "text-[var(--color-expense)]" : "text-[var(--color-income)]"}
           />
         ) : (
-          <div className="space-y-4">
-            {filteredTransactions.map((entry) => {
-              const preparedEntry = prepareEntryData(entry);
-
-              return (
-                <EntryCard
-                  key={entry.id}
-                  item={preparedEntry}
-                  onEdit={handleEditEntry}
-                  onDelete={handleDeleteClick}
-                  renderContent={entry.note ? renderEntryContent : null}
-                  defaultIconName={isExpense ? "ArrowDownCircle" : "ArrowUpCircle"}
-                  defaultColor={isExpense ? "var(--color-expense)" : "var(--color-income)"}
-                  isExpense={isExpense}
-                />
-              );
-            })}
+          <div className="space-y-5">
+            {groupedTransactions.map((group) => (
+              <div key={group.label}>
+                <p className="text-xs font-semibold text-text-tertiary uppercase tracking-wide px-1 mb-2">
+                  {group.label}
+                </p>
+                <div className="rounded-2xl border border-divider divide-y divide-divider overflow-hidden">
+                  {group.items.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="group flex items-center gap-2 px-3 hover:bg-hover transition-colors"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <MovementRow
+                          transaction={entry}
+                          category={getCategoryFor(entry)}
+                          dateLabel={formatDate(entry.date)}
+                        />
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          type="button"
+                          onClick={() => handleEditEntry(entry.id)}
+                          title="Editar"
+                          aria-label="Editar"
+                          className="cursor-pointer p-2 rounded-full text-text-tertiary hover:text-emerald-600 hover:bg-active transition-colors"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteClick(entry)}
+                          title="Eliminar"
+                          aria-label="Eliminar"
+                          className="cursor-pointer p-2 rounded-full text-text-tertiary hover:text-red-500 hover:bg-active transition-colors"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

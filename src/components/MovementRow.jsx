@@ -4,7 +4,7 @@ import { useHiddenBalances } from "../hooks/useHiddenBalances";
 const formatCurrency = (value) =>
   `$${Math.round(Number(value || 0)).toLocaleString("es-CO", { minimumFractionDigits: 0 })}`;
 
-export default function MovementRow({ transaction, category, dateLabel }) {
+export default function MovementRow({ transaction, category, dateLabel, subtitle }) {
   const { hidden } = useHiddenBalances();
   const isExpense = transaction.type === "expense";
   const IconComponent =
@@ -19,7 +19,7 @@ export default function MovementRow({ transaction, category, dateLabel }) {
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-text truncate">{transaction.name || "Sin nombre"}</p>
-        <p className="text-xs text-text-tertiary truncate">{category?.name || "Sin categoría"}</p>
+        <p className="text-xs text-text-tertiary truncate">{subtitle ?? category?.name ?? "Sin categoría"}</p>
       </div>
       <div className="text-right shrink-0">
         <p className="text-xs text-text-muted">{dateLabel}</p>

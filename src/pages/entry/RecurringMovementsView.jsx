@@ -1,10 +1,11 @@
 import * as LucideIcons from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
-import { ArrowDownCircle, ArrowUpCircle, ChevronLeft, Repeat, Search, Tag } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, ChevronLeft, Pencil, Repeat, Search, Tag, Trash2 } from "lucide-react";
 import Layout from "../../components/Layout";
 import EmptyState from "../../components/EmptyState";
 import SwipeableRow from "../../components/SwipeableRow";
+import MovementRow from "../../components/MovementRow";
 import ConfirmModal from "../../components/ConfirmModal";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useCategories } from "../../hooks/useCategories";
@@ -69,7 +70,7 @@ export default function RecurringMovementsView() {
   };
 
   return (
-    <Layout>
+    <Layout title="Movimientos recurrentes" subtitle="Revisa y edita tus programaciones automáticas">
       <div className="md:hidden pb-4">
         <div className="flex items-center gap-3 -mx-4 px-4 pb-4 mb-4 border-b border-divider">
           <button
@@ -161,6 +162,81 @@ export default function RecurringMovementsView() {
                     </span>
                   </div>
                 </SwipeableRow>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Escritorio */}
+      <div className="hidden md:block bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider p-6">
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <p className="text-sm text-text-tertiary">
+            {templates.length} {templates.length === 1 ? "movimiento programado" : "movimientos programados"}
+          </p>
+          {templates.length > 0 && (
+            <div className="relative w-72">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar movimiento recurrente..."
+                className="w-full rounded-xl border border-divider bg-surface-alt pl-10 pr-3 py-2.5 text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition"
+              />
+            </div>
+          )}
+        </div>
+
+        {templates.length === 0 ? (
+          <EmptyState
+            icon={Repeat}
+            title="Sin movimientos recurrentes"
+            message="Marca un movimiento como recurrente al crearlo para verlo aquí"
+            buttonText="Registrar movimiento"
+            buttonPath="/new-entry"
+          />
+        ) : filteredTemplates.length === 0 ? (
+          <p className="text-sm text-text-tertiary text-center py-10">
+            Sin resultados para "{search}".
+          </p>
+        ) : (
+          <div className="rounded-2xl border border-divider divide-y divide-divider overflow-hidden">
+            {filteredTemplates.map((t) => {
+              const category = getCategoryFor(t);
+              const nextDate = previewNextOccurrence(t);
+
+              return (
+                <div key={t.id} className="group flex items-center gap-2 px-3 hover:bg-hover transition-colors">
+                  <div className="flex-1 min-w-0">
+                    <MovementRow
+                      transaction={t}
+                      category={category}
+                      dateLabel=""
+                      subtitle={`${describeRecurrence(t.recurrence)} · ${formatNextDate(nextDate)}`}
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={() => handleEdit(t.id)}
+                      title="Editar"
+                      aria-label="Editar"
+                      className="cursor-pointer p-2 rounded-full text-text-tertiary hover:text-emerald-600 hover:bg-active transition-colors"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteClick(t)}
+                      title="Eliminar"
+                      aria-label="Eliminar"
+                      className="cursor-pointer p-2 rounded-full text-text-tertiary hover:text-red-500 hover:bg-active transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
               );
             })}
           </div>

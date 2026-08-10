@@ -9,16 +9,17 @@ import IconInput from "../../components/inputs/IconInput";
 import SubmitButton from "../../components/SubmitButton";
 import ConfirmModal from "../../components/ConfirmModal";
 import IconColorPickerSheet from "../../components/IconColorPickerSheet";
-import { ChevronLeft, ChevronDown, Save, Tag } from "lucide-react";
+import { ChevronLeft, ChevronDown, Save, Search, Tag } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { useCategories } from "../../hooks/useCategories";
 import CancelButton from "../../components/CancelButton";
+import CategoryGridCard from "../../components/CategoryGridCard";
 
 export default function EditCategoryView() {
   const navigate = useNavigate();
   const location = useLocation();
   const { categoryId } = useParams();
-  const { categories, updateCategory, loading } = useCategories();
+  const { categories, updateCategory, deleteCategory, loading } = useCategories();
 
   // Determinar el tipo basado en el estado de navegación
   const [activeTab, setActiveTab] = useState(() => {
@@ -42,6 +43,13 @@ export default function EditCategoryView() {
     message: "",
     data: null,
   });
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const filteredCategories = (categories[typeKey] || []).filter((c) =>
+    c.name.toLowerCase().includes(searchTerm.trim().toLowerCase())
+  );
 
   // Firestore tarda un instante en entregar el primer snapshot (`loading`).
   // Sólo cuando llega la categoría cargamos sus datos en el formulario, y
@@ -116,6 +124,16 @@ export default function EditCategoryView() {
 
   const handleCancel = () => navigate(-1);
 
+  const handleEditOther = (category) =>
+    navigate(`/edit-category/${category.id}`, { state: { type: typeKey } });
+
+  const handleDeleteClick = (category) => setDeleteTarget(category);
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) deleteCategory(deleteTarget.id, typeKey);
+    setDeleteTarget(null);
+  };
+
   const PreviewIcon = LucideIcons[formData.icon] || Tag;
 
   return (
@@ -188,58 +206,105 @@ export default function EditCategoryView() {
         onApply={(icon, color) => setFormData((prev) => ({ ...prev, icon, color }))}
       />
 
-      {/* Escritorio: sin cambios */}
-      <div className="hidden md:block bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
-        <div className="text-center sm:text-left">
-          <PageHeading title="Editar categoría" />
-          <TabsSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* Escritorio: formulario + categorías existentes */}
+      <div className="hidden md:grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-6 items-start">
+        <div className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
+          <div className="text-center sm:text-left">
+            <PageHeading title="Editar categoría" />
+            <TabsSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="flex flex-col space-y-6">
+              <NameInput
+                value={formData.name}
+                onChange={handleChange}
+                onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
+                error={isEmpty("name")}
+                label="Nombre de categoría"
+                placeholder="Ej: Salud"
+              />
+
+              <ColorInput
+                value={formData.color}
+                onChange={handleChange}
+                onBlur={() => setTouched((prev) => ({ ...prev, color: true }))}
+                error={isEmpty("color")}
+              />
+
+              <IconInput
+                value={formData.icon}
+                onChange={handleChange}
+                onBlur={() => setTouched((prev) => ({ ...prev, icon: true }))}
+                error={isEmpty("icon")}
+              />
+            </div>
+
+            <div className="flex flex-col w-full space-y-2">
+              <CancelButton onClick={handleCancel} sizeClass="w-full mb-2" />
+
+              <SubmitButton
+                label="Actualizar categoría"
+                Icon={Save}
+                color={
+                  isExpense
+                    ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
+                    : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
+                }
+                text="text-white"
+                disabled={!isFormValid || isSubmitting}
+                loading={isSubmitting}
+                sizeClass="w-full"
+              />
+            </div>
+          </form>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex flex-col space-y-6">
-            <NameInput
-              value={formData.name}
-              onChange={handleChange}
-              onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
-              error={isEmpty("name")}
-              label="Nombre de categoría"
-              placeholder="Ej: Salud"
-            />
+        {/* Categorías existentes */}
+        <div className="bg-surface rounded-2xl shadow-md border border-divider p-6">
+          <h3 className="font-semibold text-text mb-4">
+            Categorías existentes <span className="text-text-tertiary font-normal">({filteredCategories.length})</span>
+          </h3>
 
-            <ColorInput
-              value={formData.color}
-              onChange={handleChange}
-              onBlur={() => setTouched((prev) => ({ ...prev, color: true }))}
-              error={isEmpty("color")}
-            />
-
-            <IconInput
-              value={formData.icon}
-              onChange={handleChange}
-              onBlur={() => setTouched((prev) => ({ ...prev, icon: true }))}
-              error={isEmpty("icon")}
+          <div className="relative mb-4">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar categoría..."
+              className="w-full rounded-xl border border-divider bg-surface-alt pl-10 pr-3 py-2.5 text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition"
             />
           </div>
 
-          <div className="flex flex-col w-full space-y-2">
-            <CancelButton onClick={handleCancel} sizeClass="w-full mb-2" />
-
-            <SubmitButton
-              label="Actualizar categoría"
-              Icon={Save}
-              color={
-                isExpense
-                  ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
-                  : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
-              }
-              text="text-white"
-              disabled={!isFormValid || isSubmitting}
-              loading={isSubmitting}
-              sizeClass="w-full"
-            />
-          </div>
-        </form>
+          {filteredCategories.length === 0 ? (
+            <p className="text-sm text-text-tertiary text-center py-10">
+              {searchTerm ? `Sin resultados para "${searchTerm}".` : "Sin categorías todavía."}
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {filteredCategories.map((category) => (
+                <CategoryGridCard
+                  key={category.id}
+                  item={category}
+                  onEdit={() => handleEditOther(category)}
+                  onDelete={handleDeleteClick}
+                  defaultIconName="Tag"
+                  defaultColor={isExpense ? "var(--color-expense)" : "var(--color-income)"}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="¿Eliminar categoría?"
+        message={`¿Estás seguro de eliminar la categoría "${deleteTarget?.name || ""}"? Esta acción no se puede deshacer.`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
 
       {/* Modal de confirmación */}
       <ConfirmModal

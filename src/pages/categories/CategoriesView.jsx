@@ -12,6 +12,7 @@ import CancelButton from "../../components/CancelButton";
 import ConfirmModal from "../../components/ConfirmModal";
 import { ChevronLeft, Pencil, Plus, Search, Tag, Trash2 } from "lucide-react";
 import { useCategories } from "../../hooks/useCategories";
+import CategoryGridCard from "../../components/CategoryGridCard";
 
 const DEFAULT_COLOR = "#10b981";
 const DEFAULT_ICON = "Tag";
@@ -262,64 +263,105 @@ export default function CategoriesView() {
         )}
       </div>
 
-      {/* Escritorio: sin cambios */}
-      <div className="hidden md:block bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
-        <div className="text-center sm:text-left">
-          <PageHeading
-            title={isEditing ? "Editar categoría" : "Registrar nueva categoría"}
-          />
-          <TabsSwitcher activeTab={activeTab} setActiveTab={handleTabChange} />
+      {/* Escritorio: formulario + categorías existentes */}
+      <div className="hidden md:grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-6 items-start">
+        <div className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6">
+          <div className="text-center sm:text-left">
+            <PageHeading
+              title={isEditing ? "Editar categoría" : "Registrar nueva categoría"}
+            />
+            <TabsSwitcher activeTab={activeTab} setActiveTab={handleTabChange} />
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="flex flex-col space-y-6">
+              <NameInput
+                value={formData.name}
+                onChange={handleChange}
+                onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
+                error={isEmpty("name")}
+                label="Nombre de categoría"
+                placeholder="Ej: Salud"
+              />
+
+              <ColorInput
+                value={formData.color}
+                onChange={handleChange}
+                onBlur={() => setTouched((prev) => ({ ...prev, color: true }))}
+                error={isEmpty("color")}
+              />
+
+              <IconInput
+                value={formData.icon}
+                onChange={handleChange}
+                onBlur={() => setTouched((prev) => ({ ...prev, icon: true }))}
+                error={isEmpty("icon")}
+              />
+            </div>
+
+            <div className="flex flex-col w-full">
+              {isEditing && (
+                <CancelButton
+                  onClick={resetForm}
+                  sizeClass="w-full mb-2"
+                />
+              )}
+
+              <SubmitButton
+                label={isEditing ? "Actualizar categoría" : "Guardar categoría"}
+                Icon={Plus}
+                color={
+                  isExpense
+                    ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
+                    : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
+                }
+                text="text-white"
+                disabled={!isFormValid || isSubmitting}
+                loading={isSubmitting}
+                sizeClass="w-full"
+              />
+            </div>
+          </form>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex flex-col space-y-6">
-            <NameInput
-              value={formData.name}
-              onChange={handleChange}
-              onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
-              error={isEmpty("name")}
-              label="Nombre de categoría"
-              placeholder="Ej: Salud"
-            />
+        {/* Categorías existentes */}
+        <div className="bg-surface rounded-2xl shadow-md border border-divider p-6">
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <h3 className="font-semibold text-text">
+              Categorías existentes <span className="text-text-tertiary font-normal">({filteredCategories.length})</span>
+            </h3>
+          </div>
 
-            <ColorInput
-              value={formData.color}
-              onChange={handleChange}
-              onBlur={() => setTouched((prev) => ({ ...prev, color: true }))}
-              error={isEmpty("color")}
-            />
-
-            <IconInput
-              value={formData.icon}
-              onChange={handleChange}
-              onBlur={() => setTouched((prev) => ({ ...prev, icon: true }))}
-              error={isEmpty("icon")}
+          <div className="relative mb-4">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar categoría..."
+              className="w-full rounded-xl border border-divider bg-surface-alt pl-10 pr-3 py-2.5 text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition"
             />
           </div>
 
-          <div className="flex flex-col w-full">
-            {isEditing && (
-              <CancelButton
-                onClick={resetForm}
-                sizeClass="w-full mb-2"
-              />
-            )}
-
-            <SubmitButton
-              label={isEditing ? "Actualizar categoría" : "Guardar categoría"}
-              Icon={Plus}
-              color={
-                isExpense
-                  ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
-                  : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
-              }
-              text="text-white"
-              disabled={!isFormValid || isSubmitting}
-              loading={isSubmitting}
-              sizeClass="w-full"
-            />
-          </div>
-        </form>
+          {filteredCategories.length === 0 ? (
+            <p className="text-sm text-text-tertiary text-center py-10">
+              {searchTerm ? `Sin resultados para "${searchTerm}".` : "Sin categorías todavía."}
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {filteredCategories.map((category) => (
+                <CategoryGridCard
+                  key={category.id}
+                  item={category}
+                  onEdit={() => handleEditCategory(category)}
+                  onDelete={handleDeleteClick}
+                  defaultIconName="Tag"
+                  defaultColor={isExpense ? "var(--color-expense)" : "var(--color-income)"}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modal de confirmación */}

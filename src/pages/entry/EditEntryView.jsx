@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import * as LucideIcons from "lucide-react";
 import Layout from "../../components/Layout";
-import TabsSwitcher from "../../components/TabsSwitcher";
-import PageHeading from "../../components/PageHeading";
 import SubmitButton from "../../components/SubmitButton";
 import AmountInput from "../../components/inputs/AmountInput";
 import NameInput from "../../components/inputs/NameInput";
@@ -14,11 +12,38 @@ import ConfirmModal from "../../components/ConfirmModal";
 import ToastMessage from "../../components/ToastMessage";
 import CategoryPickerSheet from "../../components/CategoryPickerSheet";
 import RecurrenceSheet from "../../components/RecurrenceSheet";
-import { Save, ChevronLeft, ChevronRight, Tag, Plus, Repeat, X } from "lucide-react";
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Save,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Tag,
+  Plus,
+  Repeat,
+  X,
+} from "lucide-react";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useCategories } from "../../hooks/useCategories";
 import { describeRecurrence } from "../../utils/recurrence";
 import CancelButton from "../../components/CancelButton";
+
+const formatCurrency = (value) => {
+  const n = Number(value || 0);
+  return `$${n.toLocaleString("es-CO", { minimumFractionDigits: 2 })}`;
+};
+
+const formatChipDate = (dateString) => {
+  if (!dateString) return null;
+  const [year, month, day] = dateString.split("-");
+  if (!year) return null;
+  return new Date(Number(year), Number(month) - 1, Number(day)).toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
 
 export default function EditEntryView() {
   const navigate = useNavigate();
@@ -150,11 +175,6 @@ export default function EditEntryView() {
   };
 
   const handleCancel = () => navigate(-1);
-
-  const handleTabChange = (newTab) => {
-    setActiveTab(newTab);
-    setFormData((prev) => ({ ...prev, category: "" }));
-  };
 
   const handleAddNewCategory = () => navigate("/categories");
 
@@ -328,79 +348,152 @@ export default function EditEntryView() {
         returnTo={`/edit-entry/${entryId}`}
       />
 
-      {/* Escritorio: layout sin cambios */}
-      <form
-        onSubmit={handleSubmit}
-        className="hidden md:block bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6"
-      >
-        <div className="text-center sm:text-left">
-          <PageHeading title="Editar movimiento" />
-          <TabsSwitcher activeTab={activeTab} setActiveTab={handleTabChange} />
-        </div>
-
-        <div className="space-y-6">
-          {/* Agrupar Monto y Nombre */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <AmountInput
-              value={formData.amount}
-              onChange={handleChange}
-              onBlur={() => setTouched((prev) => ({ ...prev, amount: true }))}
-              error={isEmpty("amount")}
-            />
-
-            <NameInput
-              value={formData.name}
-              onChange={handleChange}
-              onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
-              error={isEmpty("name")}
-            />
-          </div>
-
-          {/* Agrupar Categoría y Fecha */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <SelectInput
-              options={categorias}
-              value={formData.category}
-              onChange={handleChange}
-              onBlur={() => setTouched((prev) => ({ ...prev, category: true }))}
-              error={isEmpty("category")}
-              label="Categoría"
-              name="category"
-              placeholder="Selecciona una categoría"
-              onAddNew={() => handleAddNewCategory()}
-              addNewLabel="Agregar categoría"
-              isObjectOptions={true}
-            />
-
-            <DateInput
-              value={formData.date}
-              onChange={handleChange}
-              onBlur={() => setTouched((prev) => ({ ...prev, date: true }))}
-              error={isEmpty("date")}
-              label="Fecha"
-              name="date"
-            />
-          </div>
-
-          <NoteTextarea value={formData.note} onChange={handleChange} />
-
-          <div className="flex flex-col w-full space-y-2">
-            <CancelButton onClick={handleCancel} sizeClass="w-full mb-2" />
-
-            <SubmitButton
-              label={isExpense ? "Actualizar gasto" : "Actualizar ingreso"}
-              Icon={Save}
-              color={
+      {/* Escritorio: form + vista previa, mismo patrón que "Registrar movimiento" */}
+      <div className="hidden md:block">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-6 items-start">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-surface rounded-2xl shadow-md border border-divider p-6 space-y-6"
+          >
+            <span
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold rounded-full px-3 py-1.5 ${
                 isExpense
-                  ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
-                  : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
-              }
-              text="text-white"
-              disabled={!isFormValid}
-            />
+                  ? "bg-rose-500/15 text-rose-600 dark:text-rose-400"
+                  : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+              }`}
+            >
+              {isExpense ? <ArrowDownCircle size={14} /> : <ArrowUpCircle size={14} />}
+              Editando {isExpense ? "gasto" : "ingreso"}
+            </span>
+
+            {/* Agrupar Monto y Nombre */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <AmountInput
+                value={formData.amount}
+                onChange={handleChange}
+                onBlur={() => setTouched((prev) => ({ ...prev, amount: true }))}
+                error={isEmpty("amount")}
+              />
+
+              <NameInput
+                value={formData.name}
+                onChange={handleChange}
+                onBlur={() => setTouched((prev) => ({ ...prev, name: true }))}
+                error={isEmpty("name")}
+              />
+            </div>
+
+            {/* Agrupar Categoría y Fecha */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <SelectInput
+                options={categorias}
+                value={formData.category}
+                onChange={handleChange}
+                onBlur={() => setTouched((prev) => ({ ...prev, category: true }))}
+                error={isEmpty("category")}
+                label="Categoría"
+                name="category"
+                placeholder="Selecciona una categoría"
+                onAddNew={() => handleAddNewCategory()}
+                addNewLabel="Agregar categoría"
+                isObjectOptions={true}
+              />
+
+              <DateInput
+                value={formData.date}
+                onChange={handleChange}
+                onBlur={() => setTouched((prev) => ({ ...prev, date: true }))}
+                error={isEmpty("date")}
+                label="Fecha"
+                name="date"
+              />
+            </div>
+
+            <NoteTextarea value={formData.note} onChange={handleChange} />
+
+            <div className="flex flex-col w-full space-y-2">
+              <CancelButton onClick={handleCancel} sizeClass="w-full mb-2" />
+
+              <SubmitButton
+                label={isExpense ? "Actualizar gasto" : "Actualizar ingreso"}
+                Icon={Save}
+                color={
+                  isExpense
+                    ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
+                    : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
+                }
+                text="text-white"
+                disabled={!isFormValid}
+              />
+            </div>
+          </form>
+
+          {/* Vista previa */}
+          <div className="bg-surface rounded-2xl shadow-md border border-divider p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Eye size={18} className="text-emerald-600 dark:text-emerald-400" />
+              <h3 className="font-semibold text-text">Vista previa</h3>
+            </div>
+
+            <div
+              className={`rounded-xl border p-4 ${
+                isExpense
+                  ? "bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/40"
+                  : "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900/40"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span
+                    className="p-2.5 rounded-full shrink-0"
+                    style={{
+                      backgroundColor: `${selectedCategory?.color || (isExpense ? "#ef4444" : "#10b981")}20`,
+                    }}
+                  >
+                    {SelectedCategoryIcon ? (
+                      <SelectedCategoryIcon size={20} style={{ color: selectedCategory.color }} />
+                    ) : isExpense ? (
+                      <ArrowDownCircle size={20} className="text-rose-500" />
+                    ) : (
+                      <ArrowUpCircle size={20} className="text-emerald-500" />
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-xs text-text-tertiary truncate">
+                      {isExpense ? "Gasto" : "Ingreso"}
+                      {selectedCategory ? ` en ${selectedCategory.name}` : ""}
+                    </p>
+                    <p className="font-semibold text-text truncate">
+                      {formData.name || "Sin descripción"}
+                    </p>
+                  </div>
+                </div>
+                <p
+                  className={`font-bold shrink-0 ${
+                    isExpense ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
+                  }`}
+                >
+                  {isExpense ? "-" : "+"}
+                  {formData.amount ? formatCurrency(formData.amount) : "$0,00"}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 mt-3">
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-secondary bg-surface/70 px-2.5 py-1 rounded-lg">
+                  <LucideIcons.Calendar size={12} />
+                  {formatChipDate(formData.date) || "Sin fecha"}
+                </span>
+                {formData.recurring && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-secondary bg-surface/70 px-2.5 py-1 rounded-lg">
+                    <Repeat size={12} />
+                    {describeRecurrence(formData.recurrence)}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      </form>
+      </div>
 
       <ConfirmModal
         open={confirmModal.open}

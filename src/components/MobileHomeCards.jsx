@@ -10,6 +10,7 @@ import { parseLocalDate } from "../utils/date";
 import MovementRow from "./MovementRow";
 import SwipeableRow from "./SwipeableRow";
 import ConfirmModal from "./ConfirmModal";
+import ToastMessage from "./ToastMessage";
 
 const formatCurrency = (value) => `$${Math.round(Number(value || 0)).toLocaleString("es-CO")}`;
 
@@ -55,11 +56,15 @@ export default function MobileHomeCards() {
   const { amount: budgetAmount } = useBudget();
   const { level, cycle, cardHidden, allHidden } = useMoneyVisibility();
   const [confirmModal, setConfirmModal] = useState({ open: false, entry: null });
+  const [toast, setToast] = useState(null);
 
   const handleEdit = (entryId) => navigate(`/edit-entry/${entryId}`);
   const handleDeleteClick = (entry) => setConfirmModal({ open: true, entry });
   const handleConfirmDelete = () => {
-    if (confirmModal.entry) deleteTransaction(confirmModal.entry.id);
+    if (confirmModal.entry) {
+      deleteTransaction(confirmModal.entry.id);
+      setToast({ message: "Movimiento eliminado", type: "success" });
+    }
     setConfirmModal({ open: false, entry: null });
   };
   const VisibilityIcon = VISIBILITY_ICON[level];
@@ -79,12 +84,15 @@ export default function MobileHomeCards() {
     null;
 
   // Movimientos del mes actual; el resto se ve en "Ver historial completo".
+  // Las plantillas recurrentes (aún no ocurridas) no cuentan como movimiento.
   const now = new Date();
   const currentMonth = transactions.filter((t) => {
+    if (t.recurring) return false;
     const d = parseLocalDate(t.date);
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
-  const sorted = [...currentMonth].sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
+  // De más antiguo a más nuevo.
+  const sorted = [...currentMonth].sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date));
   const groups = groupByDay(sorted);
 
   return (
@@ -192,6 +200,13 @@ export default function MobileHomeCards() {
         message={`¿Estás seguro de eliminar el movimiento "${confirmModal.entry?.name || "sin nombre"}"? Esta acción no se puede deshacer.`}
         onConfirm={handleConfirmDelete}
         onCancel={() => setConfirmModal({ open: false, entry: null })}
+      />
+
+      <ToastMessage
+        open={!!toast}
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
       />
     </div>
   );

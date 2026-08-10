@@ -1,17 +1,18 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useTransactions } from "./useTransactions";
 import { generateDueOccurrences } from "../utils/recurrence";
 
-// Al cargar la app (una sola vez por sesión), genera las transacciones que
-// las plantillas recurrentes deberían haber creado hasta hoy. No hay backend
-// ni cron: esto es el "ponerse al día" que corre en el cliente.
+// Genera las transacciones que las plantillas recurrentes deberían haber
+// creado hasta hoy. No hay backend ni cron: esto es el "ponerse al día" que
+// corre en el cliente. Reacciona a cada cambio de `transactions` (no solo al
+// cargar la app) para que una recurrente creada hoy mismo se materialice de
+// inmediato — es idempotente (una vez al día por plantilla, gracias a
+// `lastGeneratedDate`), así que no genera escrituras de más en los re-runs.
 export function useRecurrenceSync(enabled) {
   const { transactions, applyRecurrenceUpdates } = useTransactions();
-  const ranRef = useRef(false);
 
   useEffect(() => {
-    if (!enabled || ranRef.current) return;
-    ranRef.current = true;
+    if (!enabled) return;
 
     const updatedTemplates = new Map();
     const additions = [];
@@ -42,7 +43,8 @@ export function useRecurrenceSync(enabled) {
     if (additions.length === 0) return;
 
     applyRecurrenceUpdates({ additions, templateUpdates: Array.from(updatedTemplates.values()) });
-    // Corre una sola vez por sesión; no debe reaccionar a cambios posteriores.
+    // `applyRecurrenceUpdates` es una nueva referencia en cada render de
+    // useTransactions; solo debe reaccionar a cambios reales de `transactions`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled]);
+  }, [enabled, transactions]);
 }

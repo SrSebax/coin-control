@@ -88,6 +88,11 @@ export function useTransactions() {
   const storeLoading = useSyncExternalStore(subscribe, getLoadingSnapshot);
   const loading = authLoading || storeLoading;
 
+  // Las plantillas recurrentes (`recurring: true`) son solo la programación,
+  // no movimientos reales — no deben contar en saldos ni listados. Sus
+  // ocurrencias reales (`recurring: false`, `generatedFrom`) sí cuentan.
+  const visibleTransactions = transactions.filter((t) => !t.recurring);
+
   // Calcular resumen basado en las transacciones
   const calculateSummary = (transactionsList) => {
     const summary = transactionsList.reduce((acc, transaction) => {
@@ -102,7 +107,7 @@ export function useTransactions() {
     return summary;
   };
 
-  const summary = calculateSummary(transactions);
+  const summary = calculateSummary(visibleTransactions);
 
   // Agregar nueva transacción
   const addTransaction = async (transaction) => {
@@ -172,7 +177,7 @@ export function useTransactions() {
 
   // Obtener transacciones por tipo
   const getTransactionsByType = (type) => {
-    return transactions.filter((t) => t.type === type);
+    return visibleTransactions.filter((t) => t.type === type);
   };
 
   // Obtener transacciones por período (con rango de fechas)
@@ -183,7 +188,7 @@ export function useTransactions() {
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
 
-      return transactions.filter((t) => {
+      return visibleTransactions.filter((t) => {
         const transactionDate = parseLocalDate(t.date);
         return transactionDate.getMonth() === currentMonth &&
                transactionDate.getFullYear() === currentYear;
@@ -197,7 +202,7 @@ export function useTransactions() {
     // Ajustar end para incluir todo el día final
     end.setHours(23, 59, 59, 999);
 
-    return transactions.filter((t) => {
+    return visibleTransactions.filter((t) => {
       const transactionDate = parseLocalDate(t.date);
       return transactionDate >= start && transactionDate <= end;
     });

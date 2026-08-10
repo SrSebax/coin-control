@@ -234,9 +234,9 @@ export default function NewEntryView() {
     (t.type === "expense" ? expenseCategories : incomeCategories).find((c) => c.id === t.category) ||
     null;
 
-  const sortedTransactions = [...transactions].sort(
-    (a, b) => parseLocalDate(b.date) - parseLocalDate(a.date)
-  );
+  const sortedTransactions = transactions
+    .filter((t) => !t.recurring)
+    .sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
   const recentTransactions = sortedTransactions.slice(0, 4);
   const lastTransaction = sortedTransactions[0] || null;
 

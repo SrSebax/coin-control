@@ -103,9 +103,9 @@ function addInterval(date, frequency, interval, dayOfMonth) {
 const MAX_OCCURRENCES = 500; // resguardo ante configuraciones inválidas
 
 // Calcula las fechas (YYYY-MM-DD) que faltan por generar entre la última
-// generada (o la fecha original de la plantilla) y hoy, respetando fecha de
-// fin si existe. No incluye la fecha original: esa ya es la transacción
-// plantilla en sí.
+// generada y hoy, respetando fecha de fin si existe. La plantilla en sí
+// (`recurring: true`) no es un movimiento — solo la programación — así que
+// su propia fecha de inicio cuenta como la primera ocurrencia si ya llegó.
 export function generateDueOccurrences(template, today = new Date()) {
   const { recurrence } = template;
   if (!recurrence) return { occurrences: [], lastDate: null };
@@ -113,11 +113,19 @@ export function generateDueOccurrences(template, today = new Date()) {
   const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const endDate = recurrence.endDate ? parseLocalDate(recurrence.endDate) : null;
 
-  let cursor = recurrence.lastGeneratedDate
-    ? parseLocalDate(recurrence.lastGeneratedDate)
-    : parseLocalDate(template.date);
-
   const occurrences = [];
+  let cursor;
+
+  if (recurrence.lastGeneratedDate) {
+    cursor = parseLocalDate(recurrence.lastGeneratedDate);
+  } else {
+    const originalDate = parseLocalDate(template.date);
+    if (originalDate <= todayMid && (!endDate || originalDate <= endDate)) {
+      occurrences.push(toISODateString(originalDate));
+    }
+    cursor = originalDate;
+  }
+
   let safety = 0;
 
   while (safety < MAX_OCCURRENCES) {

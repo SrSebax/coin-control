@@ -31,9 +31,12 @@ export default function HomeView() {
 
   return (
     <Layout>
-      {toast && (
-        <ToastMessage message={toast.message} type={toast.type} onClose={() => setToast(null)} />
-      )}
+      <ToastMessage
+        open={!!toast}
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
+      />
 
       <div className="space-y-5">
         {/* Saludo: mismo diseño en mobile y desktop, ya no vive en el navbar */}

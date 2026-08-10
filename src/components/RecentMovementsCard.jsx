@@ -48,7 +48,7 @@ export default function RecentMovementsCard() {
   };
 
   const filtered = transactions
-    .filter((t) => filter === "todos" || t.type === filter)
+    .filter((t) => !t.recurring && (filter === "todos" || t.type === filter))
     .sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));

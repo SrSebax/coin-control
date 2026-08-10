@@ -36,15 +36,18 @@ export default function ToastMessage({ open = false, message, type = 'success', 
   };
 
   if (!open) return null;
-  
+
   return (
-    <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right-2">
-      <div className={`flex items-center gap-3 p-4 rounded-lg border shadow-lg ${getStyles()}`}>
+    // Mobile: debajo del navbar (h-16) + safe-area, para no montarse encima
+    // del header. Desktop: esquina superior derecha, como antes.
+    <div className="fixed z-50 inset-x-4 top-[calc(env(safe-area-inset-top)+76px)] md:inset-x-auto md:top-4 md:right-4 md:w-96 animate-in fade-in zoom-in-95 duration-200">
+      <div className={`flex items-center gap-3 p-4 rounded-2xl border shadow-lg ${getStyles()}`}>
         {getIcon()}
-        <span className="font-medium">{message}</span>
+        <span className="font-medium flex-1 min-w-0">{message}</span>
         <button
           onClick={onClose}
-          className="ml-2 p-1 hover:bg-black/10 rounded-full transition-colors"
+          aria-label="Cerrar"
+          className="cursor-pointer shrink-0 p-1 hover:bg-black/10 rounded-full transition-colors"
         >
           <X size={16} />
         </button>

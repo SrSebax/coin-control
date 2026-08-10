@@ -7,6 +7,7 @@ import EmptyState from "../../components/EmptyState";
 import SwipeableRow from "../../components/SwipeableRow";
 import MovementRow from "../../components/MovementRow";
 import ConfirmModal from "../../components/ConfirmModal";
+import ToastMessage from "../../components/ToastMessage";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useCategories } from "../../hooks/useCategories";
 import { describeRecurrence, previewNextOccurrence } from "../../utils/recurrence";
@@ -35,6 +36,7 @@ export default function RecurringMovementsView() {
 
   const [confirmModal, setConfirmModal] = useState({ open: false, entry: null });
   const [search, setSearch] = useState("");
+  const [toast, setToast] = useState(null);
 
   const expenseCategories = getCategoriesByType("expense");
   const incomeCategories = getCategoriesByType("income");
@@ -65,7 +67,10 @@ export default function RecurringMovementsView() {
   const handleEdit = (entryId) => navigate(`/edit-entry/${entryId}`);
   const handleDeleteClick = (entry) => setConfirmModal({ open: true, entry });
   const handleConfirmDelete = () => {
-    if (confirmModal.entry) deleteTransaction(confirmModal.entry.id);
+    if (confirmModal.entry) {
+      deleteTransaction(confirmModal.entry.id);
+      setToast({ message: "Movimiento recurrente eliminado", type: "success" });
+    }
     setConfirmModal({ open: false, entry: null });
   };
 
@@ -249,6 +254,13 @@ export default function RecurringMovementsView() {
         message={`¿Estás seguro de eliminar "${confirmModal.entry?.name || "sin nombre"}"? Esto no elimina los movimientos ya generados, solo detiene la programación.`}
         onConfirm={handleConfirmDelete}
         onCancel={() => setConfirmModal({ open: false, entry: null })}
+      />
+
+      <ToastMessage
+        open={!!toast}
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
       />
     </Layout>
   );

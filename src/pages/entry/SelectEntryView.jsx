@@ -21,6 +21,7 @@ import ConfirmModal from "../../components/ConfirmModal";
 import EmptyState from "../../components/EmptyState";
 import MovementRow from "../../components/MovementRow";
 import ModalPortal from "../../components/ModalPortal";
+import ToastMessage from "../../components/ToastMessage";
 import SwipeableRow from "../../components/SwipeableRow";
 import DateInput from "../../components/inputs/DateInput";
 import { useTransactions } from "../../hooks/useTransactions";
@@ -105,6 +106,7 @@ export default function SelectEntryView() {
     message: "",
     entryId: null,
   });
+  const [toast, setToast] = useState(null);
 
   const handleEditEntry = (entryId) => {
     navigate(`/edit-entry/${entryId}`);
@@ -122,6 +124,7 @@ export default function SelectEntryView() {
   const handleConfirmDelete = () => {
     if (confirmModal.entryId) {
       deleteTransaction(confirmModal.entryId);
+      setToast({ message: "Movimiento eliminado", type: "success" });
       setConfirmModal({ open: false, title: "", message: "", entryId: null });
     }
   };
@@ -151,10 +154,11 @@ export default function SelectEntryView() {
   const categorias = getCategoriesByType(typeKey);
   const getCategoryFor = (entry) => categorias.find((c) => c.id === entry.category) || null;
 
-  // Filtrar y ordenar transacciones por tipo (más recientes primero)
+  // Filtrar y ordenar transacciones por tipo (más recientes primero). Las
+  // plantillas recurrentes no son movimientos reales, no se listan acá.
   const filteredTransactions = useMemo(() => {
     return transactions
-      .filter((t) => t.type === typeKey)
+      .filter((t) => t.type === typeKey && !t.recurring)
       .sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
   }, [transactions, typeKey]);
 
@@ -181,6 +185,12 @@ export default function SelectEntryView() {
   );
 
   const groupedTransactions = useMemo(() => groupByDate(searchedTransactions), [searchedTransactions]);
+
+  // En mobile se pide de más antiguo a más nuevo (al revés que desktop).
+  const mobileGroupedTransactions = useMemo(
+    () => [...groupedTransactions].reverse().map((group) => ({ ...group, items: [...group.items].reverse() })),
+    [groupedTransactions]
+  );
 
   return (
     <Layout>
@@ -332,7 +342,7 @@ export default function SelectEntryView() {
           />
         ) : (
           <div className="space-y-5">
-            {groupedTransactions.map((group) => (
+            {mobileGroupedTransactions.map((group) => (
               <div key={group.label}>
                 <p className="text-xs font-semibold text-text-tertiary uppercase tracking-wide px-1 mb-2">
                   {group.label}
@@ -647,6 +657,13 @@ export default function SelectEntryView() {
         message={confirmModal.message}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
+      />
+
+      <ToastMessage
+        open={!!toast}
+        message={toast?.message}
+        type={toast?.type}
+        onClose={() => setToast(null)}
       />
     </Layout>
   );

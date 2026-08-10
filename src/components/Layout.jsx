@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import MobileTabBar from "./MobileTabBar";
+import OfflineBanner from "./OfflineBanner";
 
 export default function Layout({ children, title, subtitle, showTitleOnMobile, hideHeaderActions }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -14,6 +15,7 @@ export default function Layout({ children, title, subtitle, showTitleOnMobile, h
   return (
     <div className="flex h-screen overflow-hidden bg-gradient-to-br from-[var(--color-primary-soft)] via-[var(--color-background)] to-[var(--color-background)] dark:bg-none dark:bg-background text-text relative">
       <Sidebar collapsed={collapsed} />
+      <OfflineBanner />
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
         <Navbar

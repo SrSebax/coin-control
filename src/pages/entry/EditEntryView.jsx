@@ -14,7 +14,7 @@ import ConfirmModal from "../../components/ConfirmModal";
 import ToastMessage from "../../components/ToastMessage";
 import CategoryPickerSheet from "../../components/CategoryPickerSheet";
 import RecurrenceSheet from "../../components/RecurrenceSheet";
-import { Save, ChevronLeft, ChevronRight, Tag, Plus, Repeat, X, Loader2 } from "lucide-react";
+import { Save, ChevronLeft, ChevronRight, Tag, Plus, Repeat, X } from "lucide-react";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useCategories } from "../../hooks/useCategories";
 import { describeRecurrence } from "../../utils/recurrence";
@@ -49,7 +49,6 @@ export default function EditEntryView() {
   });
 
   const [touched, setTouched] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [recurrenceSheetOpen, setRecurrenceSheetOpen] = useState(false);
   const [mobileNoteOpen, setMobileNoteOpen] = useState(() => Boolean(formData.note));
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
@@ -129,24 +128,21 @@ export default function EditEntryView() {
     });
   };
 
-  const handleConfirmSubmit = async () => {
-    setIsSubmitting(true);
-
-    try {
-      await updateTransaction(entryId, confirmModal.data);
-      navigate("/home", {
-        state: {
-          message: `${isExpense ? "Gasto" : "Ingreso"} actualizado exitosamente`,
-          type: "success",
-        },
-      });
-    } catch (error) {
+  const handleConfirmSubmit = () => {
+    // No se espera el ack del servidor: con persistencia offline, la
+    // promesa de Firestore no resuelve hasta reconectar. El cambio ya se
+    // aplicó en caché local (y en la UI vía onSnapshot), así que navegamos
+    // de una vez; si la escritura falla de verdad, solo se loguea.
+    updateTransaction(entryId, confirmModal.data).catch((error) => {
       console.error("Error al actualizar la transacción:", error);
-      setToast({ message: "No se pudo actualizar el movimiento. Intenta de nuevo.", type: "error" });
-    } finally {
-      setIsSubmitting(false);
-      setConfirmModal({ open: false, title: "", message: "", data: null });
-    }
+    });
+    navigate("/home", {
+      state: {
+        message: `${isExpense ? "Gasto" : "Ingreso"} actualizado exitosamente`,
+        type: "success",
+      },
+    });
+    setConfirmModal({ open: false, title: "", message: "", data: null });
   };
 
   const handleCancelSubmit = () => {
@@ -309,15 +305,14 @@ export default function EditEntryView() {
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-divider p-4 pb-6">
           <button
             type="submit"
-            disabled={!isFormValid || isSubmitting}
+            disabled={!isFormValid}
             className={`cursor-pointer w-full inline-flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-white shadow disabled:opacity-50 disabled:cursor-not-allowed transition ${
               isExpense
                 ? "bg-[var(--color-button-expense)] hover:bg-[var(--color-button-expense-hover)]"
                 : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
             }`}
           >
-            {isSubmitting && <Loader2 size={18} className="animate-spin" />}
-            {isSubmitting ? "Actualizando..." : "Actualizar"}
+            Actualizar
           </button>
         </div>
       </form>
@@ -401,8 +396,7 @@ export default function EditEntryView() {
                   : "bg-[var(--color-button-income)] hover:bg-[var(--color-button-income-hover)]"
               }
               text="text-white"
-              disabled={!isFormValid || isSubmitting}
-              loading={isSubmitting}
+              disabled={!isFormValid}
             />
           </div>
         </div>

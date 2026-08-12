@@ -1,7 +1,7 @@
 import * as LucideIcons from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { useState, useMemo } from "react";
-import { ArrowDownCircle, ArrowUpCircle, ChevronLeft, Pencil, Repeat, Search, Tag, Trash2 } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { ArrowDownCircle, ArrowUpCircle, ChevronLeft, Pencil, Plus, Repeat, Search, Tag, Trash2 } from "lucide-react";
 import Layout from "../../components/Layout";
 import EmptyState from "../../components/EmptyState";
 import SwipeableRow from "../../components/SwipeableRow";
@@ -31,12 +31,20 @@ const formatNextDate = (dateString) => {
 
 export default function RecurringMovementsView() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { transactions, deleteTransaction } = useTransactions();
   const { getCategoriesByType } = useCategories();
 
   const [confirmModal, setConfirmModal] = useState({ open: false, entry: null });
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState(null);
+
+  useEffect(() => {
+    if (location.state?.message) {
+      setToast({ message: location.state.message, type: location.state.type || "success" });
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const expenseCategories = getCategoriesByType("expense");
   const incomeCategories = getCategoriesByType("income");
@@ -86,7 +94,15 @@ export default function RecurringMovementsView() {
           >
             <ChevronLeft size={24} />
           </button>
-          <h1 className="text-lg font-bold text-text">Movimientos recurrentes</h1>
+          <h1 className="text-lg font-bold text-text flex-1">Movimientos recurrentes</h1>
+          <button
+            type="button"
+            onClick={() => navigate("/new-recurring")}
+            aria-label="Nuevo movimiento recurrente"
+            className="cursor-pointer p-1.5 -m-1.5 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-hover transition-colors"
+          >
+            <Plus size={22} />
+          </button>
         </div>
 
         {templates.length > 0 && (
@@ -179,18 +195,27 @@ export default function RecurringMovementsView() {
           <p className="text-sm text-text-tertiary">
             {templates.length} {templates.length === 1 ? "movimiento programado" : "movimientos programados"}
           </p>
-          {templates.length > 0 && (
-            <div className="relative w-72">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar movimiento recurrente..."
-                className="w-full rounded-xl border border-divider bg-surface-alt pl-10 pr-3 py-2.5 text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition"
-              />
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {templates.length > 0 && (
+              <div className="relative w-72">
+                <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar movimiento recurrente..."
+                  className="w-full rounded-xl border border-divider bg-surface-alt pl-10 pr-3 py-2.5 text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] transition"
+                />
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => navigate("/new-recurring")}
+              className="cursor-pointer shrink-0 inline-flex items-center gap-1.5 py-2.5 px-4 rounded-xl font-semibold text-sm text-white bg-emerald-500 hover:bg-emerald-600 transition"
+            >
+              <Plus size={16} /> Nuevo
+            </button>
+          </div>
         </div>
 
         {templates.length === 0 ? (

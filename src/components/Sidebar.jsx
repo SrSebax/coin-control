@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronsRight,
+  Repeat,
 } from "lucide-react";
 import { itemsRoutes } from "../routes/itemsRoutes";
 import { useCurrentUser } from "../hooks/useCurrentUser";
@@ -16,7 +17,20 @@ import logoFullLight from "../assets/coin-control-light.svg";
 
 const EXPANDABLE = {
   "/categories": { key: "categories", editPath: "/select-category", editLabel: "Editar categoría", matchEdit: "/edit-category/" },
-  "/new-entry": { key: "entries", editPath: "/select-entry", editLabel: "Editar movimiento", matchEdit: "/edit-entry/" },
+  "/new-entry": {
+    key: "entries",
+    editPath: "/select-entry",
+    editLabel: "Editar movimiento",
+    matchEdit: "/edit-entry/",
+    extraLinks: [
+      {
+        path: "/recurring-movements",
+        label: "Recurrentes",
+        icon: Repeat,
+        matchPath: "/new-recurring",
+      },
+    ],
+  },
 };
 
 const GROUPS = [
@@ -35,7 +49,12 @@ export default function Sidebar({ collapsed }) {
   const { isDark } = useTheme();
   const [expandedItems, setExpandedItems] = useState({
     categories: pathname.includes("/categories") || pathname.includes("/select-category") || pathname.includes("/edit-category"),
-    entries: pathname.includes("/new-entry") || pathname.includes("/select-entry") || pathname.includes("/edit-entry"),
+    entries:
+      pathname.includes("/new-entry") ||
+      pathname.includes("/select-entry") ||
+      pathname.includes("/edit-entry") ||
+      pathname.includes("/recurring-movements") ||
+      pathname.includes("/new-recurring"),
   });
 
   const toggleExpanded = (item) => {
@@ -126,6 +145,23 @@ export default function Sidebar({ collapsed }) {
                           <span>{expandable.editLabel}</span>
                         </Link>
                       )}
+                      {!collapsed && isExpanded && expandable.extraLinks?.map((extra) => {
+                        const ExtraIcon = extra.icon;
+                        const isExtraActive =
+                          pathname === extra.path || (extra.matchPath && pathname.startsWith(extra.matchPath));
+                        return (
+                          <Link
+                            key={extra.path}
+                            to={extra.path}
+                            className={`flex items-center gap-3 px-3 py-2 ml-4 rounded-lg text-sm font-medium transition-all duration-200 ${
+                              isExtraActive ? activeClasses : "text-text-tertiary hover:bg-hover hover:text-text"
+                            }`}
+                          >
+                            <ExtraIcon size={16} />
+                            <span>{extra.label}</span>
+                          </Link>
+                        );
+                      })}
                     </div>
                   );
                 }

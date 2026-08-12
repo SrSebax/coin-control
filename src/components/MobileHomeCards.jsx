@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { TrendingUp, TrendingDown, ChevronRight, Eye, EyeOff, EyeClosed } from "lucide-react";
 import { useTransactions } from "../hooks/useTransactions";
 import { useCategories } from "../hooks/useCategories";
 import { useMonthlyStats } from "../hooks/useMonthlyStats";
-import { useBudget } from "../hooks/useBudget";
+import { useBudget, resolveActiveBudgetAmount } from "../hooks/useBudget";
 import { useMoneyVisibility } from "../hooks/useHiddenBalances";
 import { parseLocalDate } from "../utils/date";
+import { estimateRecurringExpenseForPeriod } from "../utils/recurrence";
 import MovementRow from "./MovementRow";
 import SwipeableRow from "./SwipeableRow";
 import ConfirmModal from "./ConfirmModal";
@@ -53,7 +54,8 @@ export default function MobileHomeCards() {
   const { transactions, summary, deleteTransaction } = useTransactions();
   const { getCategoriesByType } = useCategories();
   const { monthIncome, monthExpense } = useMonthlyStats();
-  const { amount: budgetAmount } = useBudget();
+  const budget = useBudget();
+  const { period: budgetPeriod, biweeklyAnchorDay } = budget;
   const { level, cycle, cardHidden, allHidden } = useMoneyVisibility();
   const [confirmModal, setConfirmModal] = useState({ open: false, entry: null });
   const [toast, setToast] = useState(null);
@@ -72,9 +74,14 @@ export default function MobileHomeCards() {
   const mask = (value, sign = "") => (allHidden ? "••••••" : `${sign}${formatCurrency(value)}`);
 
   const saldo = summary.ingresos - summary.gastos;
+  const budgetAmount = resolveActiveBudgetAmount(budget);
   const hasBudget = budgetAmount !== null && budgetAmount !== undefined;
+  const expectedRecurringExpense = useMemo(
+    () => estimateRecurringExpenseForPeriod(transactions, budgetPeriod, new Date(), biweeklyAnchorDay),
+    [transactions, budgetPeriod, biweeklyAnchorDay]
+  );
   const disponiblePercent = hasBudget
-    ? Math.max(0, Math.min(100, Math.round(((budgetAmount - monthExpense) / budgetAmount) * 100)))
+    ? Math.max(0, Math.min(100, Math.round(((budgetAmount - expectedRecurringExpense) / budgetAmount) * 100)))
     : null;
 
   const expenseCategories = getCategoriesByType("expense");

@@ -15,6 +15,8 @@ import { useMonthlyStats } from "../hooks/useMonthlyStats";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useTransactions } from "../hooks/useTransactions";
 import { useCategories } from "../hooks/useCategories";
+import { useBudget } from "../hooks/useBudget";
+import { estimateRecurringExpenseForPeriod } from "../utils/recurrence";
 import ToastMessage from "../components/ToastMessage";
 
 const formatCurrency = (value) =>
@@ -25,8 +27,14 @@ export default function HomeView() {
   const location = useLocation();
   const { user, displayName } = useCurrentUser();
   const { monthIncome, monthExpense, incomeDelta, expenseDelta } = useMonthlyStats();
-  const { getTransactionsByPeriod } = useTransactions();
+  const { transactions, getTransactionsByPeriod } = useTransactions();
   const { getCategoriesByType } = useCategories();
+  const { period: budgetPeriod, biweeklyAnchorDay } = useBudget();
+
+  const expectedRecurringExpense = useMemo(
+    () => estimateRecurringExpenseForPeriod(transactions, budgetPeriod, new Date(), biweeklyAnchorDay),
+    [transactions, budgetPeriod, biweeklyAnchorDay]
+  );
 
   const firstName = displayName ? displayName.split(" ")[0] : "";
   const initial = firstName ? firstName[0].toUpperCase() : "👋";
@@ -113,7 +121,7 @@ export default function HomeView() {
 
         <div className="md:hidden space-y-5">
           <CategoryBreakdownCard />
-          <BudgetCard spent={monthExpense} />
+          <BudgetCard spent={expectedRecurringExpense} />
         </div>
 
         {/* Bento desktop: saldo destacado + ingresos/gastos apilados */}
@@ -136,6 +144,10 @@ export default function HomeView() {
               tone="rose"
             />
           </div>
+        </div>
+
+        <div className="hidden md:block">
+          <BudgetCard spent={expectedRecurringExpense} />
         </div>
 
         {/* Mini stats */}

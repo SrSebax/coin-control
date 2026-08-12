@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 
-export default function AmountInput({ 
-  value, 
-  onChange, 
-  onBlur, 
+export default function AmountInput({
+  value,
+  onChange,
+  onBlur,
+  onKeyDown,
   error,
   label = "Monto *",
   name = "amount",
@@ -23,7 +24,7 @@ export default function AmountInput({
   const [amountFormatted, setAmountFormatted] = useState("");
 
   const formatToCurrency = useCallback((value) => {
-    const number = parseFloat(value.replace(/[.,]/g, ""));
+    const number = parseFloat(String(value).replace(/[.,]/g, ""));
     if (isNaN(number)) return "";
     return number.toLocaleString(locale);
   }, [locale]);
@@ -68,6 +69,7 @@ export default function AmountInput({
             value={amountFormatted}
             onChange={handleAmountChange}
             onBlur={onBlur}
+            onKeyDown={onKeyDown}
             placeholder={placeholder}
             autoFocus={autoFocus}
             className="flex-1 min-w-0 bg-transparent border-none outline-none text-4xl font-bold text-text placeholder-text-muted/40"
@@ -94,6 +96,7 @@ export default function AmountInput({
             value={amountFormatted}
             onChange={handleAmountChange}
             onBlur={onBlur}
+            onKeyDown={onKeyDown}
             placeholder={placeholder}
             autoFocus={autoFocus}
             size={Math.max((amountFormatted || placeholder).length, 1)}

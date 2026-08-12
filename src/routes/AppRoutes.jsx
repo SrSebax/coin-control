@@ -9,6 +9,7 @@ import EditEntryView from "../pages/entry/EditEntryView";
 import SelectEntryView from "../pages/entry/SelectEntryView";
 import RecurringMovementsView from "../pages/entry/RecurringMovementsView";
 import NewRecurringEntryView from "../pages/entry/NewRecurringEntryView";
+import BudgetDetailView from "../pages/BudgetDetailView";
 import NotFoundView from "../pages/NotFoundView";
 import LoginView from "../pages/LoginView";
 import CategoriesView from "../pages/categories/CategoriesView";
@@ -79,6 +80,10 @@ export default function AppRoutes() {
       <Route
         path="/new-recurring"
         element={user ? <NewRecurringEntryView /> : <Navigate to="/" replace />}
+      />
+      <Route
+        path="/budget"
+        element={user ? <BudgetDetailView /> : <Navigate to="/" replace />}
       />
 
       {/* Ruta de Configuración */}

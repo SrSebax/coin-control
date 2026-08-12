@@ -42,7 +42,13 @@ export default function ConfigurationView() {
   const { logout } = useLogoutController();
   const { transactions, importTransactions } = useTransactions();
   const { categories, importCategories } = useCategories();
-  const { amount: budgetAmount, setBudgetAmount } = useBudget();
+  const {
+    amount: budgetAmount,
+    period: budgetPeriod,
+    biweeklyAnchorDay,
+    biweeklyAmounts,
+    updateBudget,
+  } = useBudget();
   const { isInstalled, isInstallable, isIOS, promptInstall } = usePwaInstall();
 
   const [language] = useState("es");
@@ -63,7 +69,7 @@ export default function ConfigurationView() {
       exportedAt: new Date().toISOString(),
       transactions,
       categories,
-      budget: { amount: budgetAmount },
+      budget: { amount: budgetAmount, period: budgetPeriod, biweeklyAnchorDay, biweeklyAmounts },
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -106,7 +112,14 @@ export default function ConfigurationView() {
     try {
       await importTransactions(pendingImport.transactions);
       await importCategories(pendingImport.categories);
-      if (pendingImport.budget) setBudgetAmount(pendingImport.budget.amount);
+      if (pendingImport.budget) {
+        updateBudget({
+          amount: pendingImport.budget.amount,
+          period: pendingImport.budget.period || "monthly",
+          biweeklyAnchorDay: pendingImport.budget.biweeklyAnchorDay || 15,
+          biweeklyAmounts: pendingImport.budget.biweeklyAmounts || { first: null, second: null },
+        });
+      }
       setToast({ message: "Respaldo restaurado correctamente.", type: "success" });
     } catch {
       setToast({ message: "No se pudo restaurar el respaldo. Intenta de nuevo.", type: "error" });

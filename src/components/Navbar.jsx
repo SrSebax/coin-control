@@ -4,6 +4,7 @@ import SidebarToggle from "./SidebarToggle";
 import UserActions from "./UserActions";
 import ThemeToggle from "./ThemeToggle";
 import MonthFilter from "./MonthFilter";
+import NotificationAlert from "./NotificationAlert";
 import { useTheme } from "../hooks/useTheme";
 import logoIconDark from "../assets/favicon-dark.svg";
 import logoIconLight from "../assets/favicon-light.svg";
@@ -67,6 +68,7 @@ export default function Navbar({ toggleSidebar, title, subtitle, showTitleOnMobi
       {!hideHeaderActions && (
         <div className="flex items-center gap-1 sm:gap-3 shrink-0 ml-auto">
           <MonthFilter />
+          <NotificationAlert />
           <ThemeToggle />
           <UserActions />
         </div>

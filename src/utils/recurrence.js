@@ -288,3 +288,11 @@ export function previewNextOccurrence(template, today = new Date()) {
   if (endDate && next > endDate) return null;
   return toISODateString(next);
 }
+
+// Plantillas de gasto recurrente cuya próxima ocurrencia cae exactamente en
+// `dateString` (YYYY-MM-DD) — para armar recordatorios de pago.
+export function getRecurringPaymentsDueOn(templates, dateString, today = new Date()) {
+  return templates.filter(
+    (t) => t.recurring && t.recurrence && t.type === "expense" && previewNextOccurrence(t, today) === dateString
+  );
+}

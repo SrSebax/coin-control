@@ -28,6 +28,7 @@ import { useTransactions } from "../hooks/useTransactions";
 import { useCategories } from "../hooks/useCategories";
 import { useBudget } from "../hooks/useBudget";
 import { usePwaInstall } from "../hooks/usePwaInstall";
+import { useNotifications } from "../hooks/useNotifications";
 
 const SOCIAL_LINKS = [
   { label: "Instagram", href: "https://www.instagram.com/sebax_lond/", icon: Instagram },
@@ -50,16 +51,26 @@ export default function ConfigurationView() {
     updateBudget,
   } = useBudget();
   const { isInstalled, isInstallable, isIOS, promptInstall } = usePwaInstall();
+  const { enabled: notificationsEnabled, setEnabled: setNotificationsEnabled, permission: notificationPermission } =
+    useNotifications();
 
   const [language] = useState("es");
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [pendingImport, setPendingImport] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
   const [toast, setToast] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleToggleNotifications = () => setNotificationsEnabled((v) => !v);
+  const handleToggleNotifications = async () => {
+    const next = !notificationsEnabled;
+    await setNotificationsEnabled(next);
+    if (next && window.Notification?.permission === "denied") {
+      setToast({
+        message: "Activa las notificaciones para este sitio en los ajustes de tu navegador.",
+        type: "error",
+      });
+    }
+  };
 
   const initial = (displayName || user?.email || "U")[0].toUpperCase();
 
@@ -222,10 +233,17 @@ export default function ConfigurationView() {
         </div>
 
         {/* Notificaciones */}
-        <div className="bg-surface rounded-2xl border border-divider p-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        <div className="bg-surface rounded-2xl border border-divider p-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
             <Bell size={16} className="text-text-tertiary shrink-0" />
-            <p className="text-sm font-medium text-text">Notificaciones</p>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-text">Notificaciones</p>
+              <p className="text-xs text-text-tertiary">
+                {notificationPermission === "denied"
+                  ? "Bloqueadas en el navegador"
+                  : "Recordatorios de pagos recurrentes próximos"}
+              </p>
+            </div>
           </div>
           <button
             type="button"
@@ -493,10 +511,17 @@ export default function ConfigurationView() {
             </div>
 
             {/* Notificaciones */}
-            <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider p-6 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
+            <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider p-6 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
                 <Bell size={18} className="text-text-tertiary shrink-0" />
-                <p className="text-sm font-medium text-text">Notificaciones</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-text">Notificaciones</p>
+                  <p className="text-xs text-text-tertiary">
+                    {notificationPermission === "denied"
+                      ? "Bloqueadas en el navegador"
+                      : "Recordatorios de pagos recurrentes próximos"}
+                  </p>
+                </div>
               </div>
               <button
                 type="button"

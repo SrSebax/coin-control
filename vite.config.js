@@ -2,18 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-
-// Versión atada al deploy: se lee de package.json, que "npm run deploy" sube
-// solo (patch +1) antes de cada build — nadie tiene que acordarse de tocarla
-// a mano ni de commitear nada aparte.
-const pkg = JSON.parse(readFileSync(fileURLToPath(new URL("./package.json", import.meta.url)), "utf-8"));
 
 export default defineConfig({
-  define: {
-    "import.meta.env.VITE_APP_VERSION": JSON.stringify(pkg.version),
-  },
   plugins: [
     react(),
     tailwindcss(),

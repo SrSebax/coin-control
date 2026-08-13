@@ -4,9 +4,11 @@ import { Pencil, Check, X, ChevronRight, Minus, Plus } from "lucide-react";
 import { useBudget, resolveActiveBudgetAmount } from "../hooks/useBudget";
 import { useHiddenBalances } from "../hooks/useHiddenBalances";
 import { useTransactions } from "../hooks/useTransactions";
+import { useSelectedMonth } from "../hooks/useSelectedMonth";
 import {
   budgetPeriodHalves,
   budgetPeriodRange,
+  estimateRecurringExpenseForPeriod,
   formatBudgetRangeLabel,
   sumRecurringExpenseInRange,
 } from "../utils/recurrence";
@@ -20,11 +22,12 @@ const PERIOD_OPTIONS = [
   { id: "biweekly", label: "Quincenal", noun: "quincenal" },
 ];
 
-export default function BudgetCard({ spent }) {
+export default function BudgetCard({ tourId = "budget-card" }) {
   const budget = useBudget();
   const { period, biweeklyAnchorDay, biweeklyAmounts, updateBudget } = budget;
   const { transactions } = useTransactions();
   const { hidden } = useHiddenBalances();
+  const selectedMonth = useSelectedMonth();
   const mask = (value) => (hidden ? "••••••" : formatCurrency(value));
 
   const [editing, setEditing] = useState(false);
@@ -36,16 +39,20 @@ export default function BudgetCard({ spent }) {
 
   const isBiweekly = period === "biweekly";
   const anchorDay = biweeklyAnchorDay || 15;
+  // Mes en curso: la fecha real de hoy (así se resalta la quincena activa).
+  // Mes pasado: día 1 de ese mes, solo para ubicar el rango — no hay "hoy".
+  const referenceDate = selectedMonth.isCurrentMonth ? new Date() : selectedMonth.date;
   const currentPeriod = PERIOD_OPTIONS.find((p) => p.id === period) || PERIOD_OPTIONS[0];
-  const range = budgetPeriodRange(period || "monthly", new Date(), anchorDay);
+  const range = budgetPeriodRange(period || "monthly", referenceDate, anchorDay);
   const rangeLabel = formatBudgetRangeLabel(period || "monthly", range);
-  const activeAmount = resolveActiveBudgetAmount(budget);
+  const activeAmount = resolveActiveBudgetAmount(budget, referenceDate);
+  const spent = estimateRecurringExpenseForPeriod(transactions, period || "monthly", referenceDate, anchorDay);
 
   const todayMid = new Date();
   todayMid.setHours(0, 0, 0, 0);
   const daysRemaining = Math.max(0, Math.round((range.end - todayMid) / 86400000) + 1);
 
-  const halves = isBiweekly ? budgetPeriodHalves(new Date(), anchorDay) : null;
+  const halves = isBiweekly ? budgetPeriodHalves(referenceDate, anchorDay) : null;
   const firstTotal = halves ? sumRecurringExpenseInRange(transactions, halves.first.start, halves.first.end) : 0;
   const secondTotal = halves ? sumRecurringExpenseInRange(transactions, halves.second.start, halves.second.end) : 0;
 
@@ -82,7 +89,7 @@ export default function BudgetCard({ spent }) {
   const overBudget = hasBudget && spent > activeAmount;
 
   return (
-    <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider p-5">
+    <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider p-5" data-tour={tourId}>
       <div className="flex items-center justify-between mb-3">
         <div>
           <h3 className="font-semibold text-text">Presupuesto {currentPeriod.noun}</h3>
@@ -226,7 +233,9 @@ export default function BudgetCard({ spent }) {
                 : `Te quedan ${mask(remaining)} libres`}
             </p>
             <p className="text-xs text-text-tertiary shrink-0">
-              {daysRemaining} {daysRemaining === 1 ? "día" : "días"} restantes
+              {selectedMonth.isCurrentMonth
+                ? `${daysRemaining} ${daysRemaining === 1 ? "día" : "días"} restantes`
+                : "Período cerrado"}
             </p>
           </div>
 
@@ -238,7 +247,7 @@ export default function BudgetCard({ spent }) {
                 const halfHasBudget = halfAmount !== null && halfAmount !== undefined;
                 const halfPercent = halfHasBudget ? Math.min(100, Math.round((halfTotal / halfAmount) * 100)) : 0;
                 const halfOver = halfHasBudget && halfTotal > halfAmount;
-                const isToday = range.half === halfKey;
+                const isToday = selectedMonth.isCurrentMonth && range.half === halfKey;
 
                 return (
                   <div

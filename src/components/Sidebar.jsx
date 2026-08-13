@@ -93,6 +93,11 @@ export default function Sidebar({ collapsed }) {
 
       {/* Navegación */}
       <nav className="flex flex-col gap-4 px-2 flex-1 overflow-y-auto">
+        {/* data-tour va en un wrapper propio (no en <nav>, que con flex-1
+            se estira a toda la altura disponible y arruina el spotlight
+            del tutorial) para que el tour resalte solo los ítems, no el
+            espacio vacío debajo. */}
+        <div className="flex flex-col gap-4" data-tour="tab-bar-desktop">
         {GROUPS.map((group) => {
           const groupItems = group.paths
             .map((path) => itemsRoutes.find((item) => item.path === path) || SIDEBAR_ONLY_ITEMS.find((item) => item.path === path))
@@ -187,6 +192,7 @@ export default function Sidebar({ collapsed }) {
             </div>
           );
         })}
+        </div>
       </nav>
 
       {/* Usuario + créditos */}

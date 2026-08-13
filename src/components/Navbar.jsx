@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import SidebarToggle from "./SidebarToggle";
 import UserActions from "./UserActions";
 import ThemeToggle from "./ThemeToggle";
+import MonthFilter from "./MonthFilter";
 import { useTheme } from "../hooks/useTheme";
 import logoIconDark from "../assets/favicon-dark.svg";
 import logoIconLight from "../assets/favicon-light.svg";
@@ -46,12 +47,10 @@ export default function Navbar({ toggleSidebar, title, subtitle, showTitleOnMobi
             <ArrowRight size={18} />
           </button>
         </div>
-        <Link to="/home" className="md:hidden shrink-0" aria-label="Inicio">
-          <img src={isDark ? logoIconDark : logoIconLight} alt="CoinControl" className="w-10 h-10 rounded-xl" />
+        <Link to="/home" className="md:hidden flex items-center gap-2 shrink-0" aria-label="Inicio">
+          <img src={isDark ? logoIconDark : logoIconLight} alt="" className="w-9 h-9 rounded-xl shrink-0" />
+          {!showTitleOnMobile && <span className="text-base font-bold text-text whitespace-nowrap">CoinControl</span>}
         </Link>
-        {!showTitleOnMobile && (
-          <span className="md:hidden text-lg font-bold text-text">CoinControl</span>
-        )}
       </div>
 
       {/* Título contextual: en mobile va en el body salvo que showTitleOnMobile lo pida acá */}
@@ -64,9 +63,10 @@ export default function Navbar({ toggleSidebar, title, subtitle, showTitleOnMobi
         </div>
       )}
 
-      {/* Tema + Usuario */}
+      {/* Filtro de mes + Tema + Usuario */}
       {!hideHeaderActions && (
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
+        <div className="flex items-center gap-1 sm:gap-3 shrink-0 ml-auto">
+          <MonthFilter />
           <ThemeToggle />
           <UserActions />
         </div>

@@ -63,6 +63,7 @@ export default function RecentMovementsCard() {
         </div>
         <Link
           to="/select-entry"
+          data-tour="history-link-desktop"
           className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline"
         >
           Ver todos <ArrowRight size={12} />

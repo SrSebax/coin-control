@@ -9,6 +9,7 @@ import { useBudget } from "../hooks/useBudget";
 import { useTransactions } from "../hooks/useTransactions";
 import { useCategories } from "../hooks/useCategories";
 import { useHiddenBalances } from "../hooks/useHiddenBalances";
+import { useSelectedMonth } from "../hooks/useSelectedMonth";
 import {
   breakdownRecurringExpenseInRange,
   budgetPeriodHalves,
@@ -33,6 +34,7 @@ export default function BudgetDetailView() {
   const { transactions } = useTransactions();
   const { getCategoriesByType } = useCategories();
   const { hidden } = useHiddenBalances();
+  const selectedMonth = useSelectedMonth();
   const mask = (value) => (hidden ? "••••••" : formatCurrency(value));
 
   const [editing, setEditing] = useState(false);
@@ -44,17 +46,25 @@ export default function BudgetDetailView() {
   const [selectedHalf, setSelectedHalf] = useState(null);
 
   const anchorDay = biweeklyAnchorDay || 15;
-  const todayRange = useMemo(
-    () => budgetPeriodRange(period || "monthly", new Date(), anchorDay),
-    [period, anchorDay]
+  // Mes en curso: fecha real de hoy (resalta la quincena activa). Mes
+  // pasado (elegido en el filtro del header): día 1 de ese mes, solo para
+  // ubicar el rango — no hay "hoy" en un mes que ya pasó.
+  const referenceDate = useMemo(
+    () => (selectedMonth.isCurrentMonth ? new Date() : selectedMonth.date),
+    [selectedMonth.isCurrentMonth, selectedMonth.date]
   );
-  const halves = useMemo(() => budgetPeriodHalves(new Date(), anchorDay), [anchorDay]);
+  const todayRange = useMemo(
+    () => budgetPeriodRange(period || "monthly", referenceDate, anchorDay),
+    [period, anchorDay, referenceDate]
+  );
+  const halves = useMemo(() => budgetPeriodHalves(referenceDate, anchorDay), [anchorDay, referenceDate]);
 
-  // Al cambiar de quincena en curso (o de período), vuelve a seguir "hoy" en
-  // vez de quedarse pegado a la mitad que el usuario haya tocado antes.
+  // Al cambiar de quincena en curso, de período, o de mes elegido en el
+  // header, vuelve a seguir "hoy" en vez de quedarse pegado a la mitad que
+  // el usuario haya tocado antes.
   useEffect(() => {
     setSelectedHalf(null);
-  }, [period, todayRange.half]);
+  }, [period, todayRange.half, selectedMonth.year, selectedMonth.month]);
 
   const isBiweekly = period === "biweekly";
   const activeHalf = isBiweekly ? selectedHalf || todayRange.half : null;
@@ -305,7 +315,7 @@ export default function BudgetDetailView() {
               const halfPercent = halfHasBudget ? Math.min(100, Math.round((halfTotal / halfAmount) * 100)) : 0;
               const halfOver = halfHasBudget && halfTotal > halfAmount;
               const isActive = activeHalf === halfKey;
-              const isToday = todayRange.half === halfKey;
+              const isToday = selectedMonth.isCurrentMonth && todayRange.half === halfKey;
 
               return (
                 <button

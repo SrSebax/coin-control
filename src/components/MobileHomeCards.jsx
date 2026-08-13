@@ -6,8 +6,10 @@ import { useCategories } from "../hooks/useCategories";
 import { useMonthlyStats } from "../hooks/useMonthlyStats";
 import { useBudget, resolveActiveBudgetAmount } from "../hooks/useBudget";
 import { useMoneyVisibility } from "../hooks/useHiddenBalances";
+import { useSelectedMonth } from "../hooks/useSelectedMonth";
 import { parseLocalDate } from "../utils/date";
 import { estimateRecurringExpenseForPeriod } from "../utils/recurrence";
+import walletImage from "../assets/wallet_transparent.png";
 import MovementRow from "./MovementRow";
 import SwipeableRow from "./SwipeableRow";
 import ConfirmModal from "./ConfirmModal";
@@ -53,9 +55,16 @@ export default function MobileHomeCards() {
   const navigate = useNavigate();
   const { transactions, summary, deleteTransaction } = useTransactions();
   const { getCategoriesByType } = useCategories();
-  const { monthIncome, monthExpense } = useMonthlyStats();
+  const selectedMonth = useSelectedMonth();
+  const { monthIncome, monthExpense } = useMonthlyStats(selectedMonth.date);
   const budget = useBudget();
-  const { period: budgetPeriod, biweeklyAnchorDay } = budget;
+  const { biweeklyAnchorDay } = budget;
+  // Mes en curso: fecha real de hoy. Mes pasado elegido en el header: día 1
+  // de ese mes, solo para ubicar el rango del presupuesto.
+  const budgetReferenceDate = useMemo(
+    () => (selectedMonth.isCurrentMonth ? new Date() : selectedMonth.date),
+    [selectedMonth.isCurrentMonth, selectedMonth.date]
+  );
   const { level, cycle, cardHidden, allHidden } = useMoneyVisibility();
   const [confirmModal, setConfirmModal] = useState({ open: false, entry: null });
   const [toast, setToast] = useState(null);
@@ -74,11 +83,11 @@ export default function MobileHomeCards() {
   const mask = (value, sign = "") => (allHidden ? "••••••" : `${sign}${formatCurrency(value)}`);
 
   const saldo = summary.ingresos - summary.gastos;
-  const budgetAmount = resolveActiveBudgetAmount(budget);
+  const budgetAmount = resolveActiveBudgetAmount(budget, budgetReferenceDate);
   const hasBudget = budgetAmount !== null && budgetAmount !== undefined;
   const expectedRecurringExpense = useMemo(
-    () => estimateRecurringExpenseForPeriod(transactions, budgetPeriod, new Date(), biweeklyAnchorDay),
-    [transactions, budgetPeriod, biweeklyAnchorDay]
+    () => estimateRecurringExpenseForPeriod(transactions, budget.period, budgetReferenceDate, biweeklyAnchorDay),
+    [transactions, budget.period, biweeklyAnchorDay, budgetReferenceDate]
   );
   const disponiblePercent = hasBudget
     ? Math.max(0, Math.min(100, Math.round(((budgetAmount - expectedRecurringExpense) / budgetAmount) * 100)))
@@ -90,13 +99,13 @@ export default function MobileHomeCards() {
     (t.type === "expense" ? expenseCategories : incomeCategories).find((c) => c.id === t.category) ||
     null;
 
-  // Movimientos del mes actual; el resto se ve en "Ver historial completo".
-  // Las plantillas recurrentes (aún no ocurridas) no cuentan como movimiento.
-  const now = new Date();
+  // Movimientos del mes elegido en el header; el resto se ve en "Ver
+  // historial completo". Las plantillas recurrentes (aún no ocurridas) no
+  // cuentan como movimiento.
   const currentMonth = transactions.filter((t) => {
     if (t.recurring) return false;
     const d = parseLocalDate(t.date);
-    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    return d.getFullYear() === selectedMonth.year && d.getMonth() === selectedMonth.month;
   });
   // De más antiguo a más nuevo.
   const sorted = [...currentMonth].sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date));
@@ -109,51 +118,60 @@ export default function MobileHomeCards() {
         data-tour="balance-card"
         className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0a1f1a] to-[#0d2b22] text-white p-6 shadow-lg"
       >
-        <div className="flex items-center justify-between mb-1">
-          <p className="text-white/70 text-sm font-medium">Saldo disponible</p>
-          <button
-            onClick={cycle}
-            aria-label={VISIBILITY_LABEL[level]}
-            className="cursor-pointer p-1.5 -m-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
-          >
-            <VisibilityIcon size={16} />
-          </button>
-        </div>
-        <p className="text-4xl font-extrabold tracking-tight mb-5">{cardMask(saldo)}</p>
+        <img
+          src={walletImage}
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none select-none absolute z-0 -right-0  top-1/2 -translate-y-1/2 w-[105%] max-w-[520px] opacity-10 blur-[0.5px]"
+        />
 
-        {hasBudget && (
-          <>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] font-semibold text-white/50 tracking-wide">DISPONIBLE</span>
-              <span className="text-[11px] font-semibold text-white/70">{disponiblePercent}%</span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden mb-5">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-300"
-                style={{ width: `${disponiblePercent}%` }}
-              />
-            </div>
-          </>
-        )}
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl bg-white/10 p-3">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span className="inline-flex p-1 rounded-lg bg-emerald-400/20 text-emerald-300 shrink-0">
-                <TrendingUp size={13} />
-              </span>
-              <p className="text-[10px] font-semibold text-white/50 tracking-wide truncate">INGRESOS</p>
-            </div>
-            <p className="text-sm font-bold text-white truncate">{cardMask(monthIncome, "+")}</p>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-white/70 text-sm font-medium">Saldo disponible</p>
+            <button
+              onClick={cycle}
+              aria-label={VISIBILITY_LABEL[level]}
+              className="cursor-pointer p-1.5 -m-1.5 rounded-full text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <VisibilityIcon size={16} />
+            </button>
           </div>
-          <div className="rounded-2xl bg-white/10 p-3">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span className="inline-flex p-1 rounded-lg bg-rose-400/20 text-rose-300 shrink-0">
-                <TrendingDown size={13} />
-              </span>
-              <p className="text-[10px] font-semibold text-white/50 tracking-wide truncate">GASTOS</p>
+          <p className="text-4xl font-extrabold tracking-tight mb-5">{cardMask(saldo)}</p>
+
+          {hasBudget && (
+            <>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-semibold text-white/50 tracking-wide">DISPONIBLE</span>
+                <span className="text-[11px] font-semibold text-white/70">{disponiblePercent}%</span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden mb-5">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-300"
+                  style={{ width: `${disponiblePercent}%` }}
+                />
+              </div>
+            </>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl bg-white/10 p-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="inline-flex p-1 rounded-lg bg-emerald-400/20 text-emerald-300 shrink-0">
+                  <TrendingUp size={13} />
+                </span>
+                <p className="text-[10px] font-semibold text-white/50 tracking-wide truncate">INGRESOS</p>
+              </div>
+              <p className="text-sm font-bold text-white truncate">{cardMask(monthIncome, "+")}</p>
             </div>
-            <p className="text-sm font-bold text-white truncate">{cardMask(monthExpense, "-")}</p>
+            <div className="rounded-2xl bg-white/10 p-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="inline-flex p-1 rounded-lg bg-rose-400/20 text-rose-300 shrink-0">
+                  <TrendingDown size={13} />
+                </span>
+                <p className="text-[10px] font-semibold text-white/50 tracking-wide truncate">GASTOS</p>
+              </div>
+              <p className="text-sm font-bold text-white truncate">{cardMask(monthExpense, "-")}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -170,7 +188,11 @@ export default function MobileHomeCards() {
       {/* Movimientos agrupados por día */}
       {groups.length === 0 ? (
         <div className="bg-surface rounded-2xl border border-divider p-6 text-center">
-          <p className="text-sm text-text-tertiary">Sin movimientos registrados.</p>
+          <p className="text-sm text-text-tertiary">
+            {selectedMonth.isCurrentMonth
+              ? "Sin movimientos registrados."
+              : `Sin movimientos en ${selectedMonth.label.toLowerCase()}.`}
+          </p>
         </div>
       ) : (
         groups.map((group) => (

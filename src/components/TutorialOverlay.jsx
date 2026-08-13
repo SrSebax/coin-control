@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from "react";
+import { isMobileViewport } from "../hooks/useHomeTutorial";
 
 const PADDING = 8;
 
@@ -53,7 +54,9 @@ function useTargetRect(active, targetId) {
 }
 
 export default function TutorialOverlay({ active, step, stepIndex, totalSteps, onNext, onSkip }) {
-  const rect = useTargetRect(active, step?.id);
+  const mobile = isMobileViewport();
+  const targetId = step ? (mobile ? step.id : step.desktopId || step.id) : null;
+  const rect = useTargetRect(active, targetId);
   const cardRef = useRef(null);
   const [cardHeight, setCardHeight] = useState(150);
 
@@ -65,7 +68,7 @@ export default function TutorialOverlay({ active, step, stepIndex, totalSteps, o
 
   const viewportW = window.innerWidth;
   const viewportH = window.innerHeight;
-  const radius = step.radius ?? 20;
+  const radius = (mobile ? step.radius : step.desktopRadius ?? step.radius) ?? 20;
 
   const spotlightStyle = {
     top: rect.top - PADDING,

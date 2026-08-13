@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { PieChart as PieChartIcon } from "lucide-react";
 import { useTransactions } from "../hooks/useTransactions";
 import { useCategories } from "../hooks/useCategories";
+import { useSelectedMonth } from "../hooks/useSelectedMonth";
 import ExpenseDonutChart from "./charts/ExpenseDonutChart";
 
 const PERIODS = [
@@ -14,9 +15,10 @@ export default function CategoryBreakdownCard() {
   const [period, setPeriod] = useState("month");
   const { getTransactionsByPeriod } = useTransactions();
   const { getCategoriesByType } = useCategories();
+  const { date: selectedMonthDate } = useSelectedMonth();
 
   const expenses = useMemo(() => {
-    const now = new Date();
+    const now = selectedMonthDate;
     if (period === "month") {
       return getTransactionsByPeriod(
         new Date(now.getFullYear(), now.getMonth(), 1),
@@ -34,7 +36,7 @@ export default function CategoryBreakdownCard() {
       new Date(now.getFullYear(), 11, 31)
     ).filter((t) => t.type === "expense");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period]);
+  }, [period, selectedMonthDate]);
 
   const expenseCategories = getCategoriesByType("expense");
 

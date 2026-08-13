@@ -1,14 +1,14 @@
 {
   "name": "coin-control",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "npm run build && firebase deploy --only hosting:coin-control-nordware",
+    "deploy": "npm version patch --no-git-tag-version && git add package.json package-lock.json && git commit -m 'chore: bump version' && npm run build && firebase deploy --only hosting:coin-control-nordware",
     "deploy:rules": "firebase deploy --only firestore:rules,firestore:indexes"
   },
   "dependencies": {

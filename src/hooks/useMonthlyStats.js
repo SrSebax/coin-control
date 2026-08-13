@@ -10,15 +10,16 @@ function percentChange(current, previous) {
   return ((current - previous) / Math.abs(previous)) * 100;
 }
 
-export function useMonthlyStats() {
+export function useMonthlyStats(referenceDate = new Date()) {
   const { transactions, getTransactionsByPeriod } = useTransactions();
+  const year = referenceDate.getFullYear();
+  const month = referenceDate.getMonth();
 
   return useMemo(() => {
-    const now = new Date();
-    const currentStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const currentEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const prevEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+    const currentStart = new Date(year, month, 1);
+    const currentEnd = new Date(year, month + 1, 0);
+    const prevStart = new Date(year, month - 1, 1);
+    const prevEnd = new Date(year, month, 0);
 
     const current = getTransactionsByPeriod(currentStart, currentEnd);
     const previous = getTransactionsByPeriod(prevStart, prevEnd);
@@ -35,5 +36,5 @@ export function useMonthlyStats() {
       expenseDelta: percentChange(monthExpense, prevExpense),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactions]);
+  }, [transactions, year, month]);
 }

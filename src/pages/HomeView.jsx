@@ -15,8 +15,7 @@ import { useMonthlyStats } from "../hooks/useMonthlyStats";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import { useTransactions } from "../hooks/useTransactions";
 import { useCategories } from "../hooks/useCategories";
-import { useBudget } from "../hooks/useBudget";
-import { estimateRecurringExpenseForPeriod } from "../utils/recurrence";
+import { useSelectedMonth } from "../hooks/useSelectedMonth";
 import ToastMessage from "../components/ToastMessage";
 
 const formatCurrency = (value) =>
@@ -26,23 +25,18 @@ export default function HomeView() {
   const [toast, setToast] = useState(null);
   const location = useLocation();
   const { user, displayName } = useCurrentUser();
-  const { monthIncome, monthExpense, incomeDelta, expenseDelta } = useMonthlyStats();
-  const { transactions, getTransactionsByPeriod } = useTransactions();
+  const selectedMonth = useSelectedMonth();
+  const { monthIncome, monthExpense, incomeDelta, expenseDelta } = useMonthlyStats(selectedMonth.date);
+  const { getTransactionsByPeriod } = useTransactions();
   const { getCategoriesByType } = useCategories();
-  const { period: budgetPeriod, biweeklyAnchorDay } = useBudget();
-
-  const expectedRecurringExpense = useMemo(
-    () => estimateRecurringExpenseForPeriod(transactions, budgetPeriod, new Date(), biweeklyAnchorDay),
-    [transactions, budgetPeriod, biweeklyAnchorDay]
-  );
 
   const firstName = displayName ? displayName.split(" ")[0] : "";
   const initial = firstName ? firstName[0].toUpperCase() : "👋";
 
   const { topCategory, dailyAvgExpense, transactionCount, biggestExpense } = useMemo(() => {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const { year, month, isCurrentMonth } = selectedMonth;
+    const start = new Date(year, month, 1);
+    const end = new Date(year, month + 1, 0);
     const monthAll = getTransactionsByPeriod(start, end);
     const monthExpenses = monthAll.filter((t) => t.type === "expense");
     const expenseCategories = getCategoriesByType("expense");
@@ -64,7 +58,9 @@ export default function HomeView() {
       ? expenseCategories.find((c) => c.id === biggest.category) || null
       : null;
 
-    const daysElapsed = Math.max(1, now.getDate());
+    // Mes en curso: promedio sobre los días ya vividos. Mes pasado: ya cerró,
+    // se promedia sobre el total de días que tuvo.
+    const daysElapsed = isCurrentMonth ? Math.max(1, new Date().getDate()) : end.getDate();
 
     return {
       topCategory: top,
@@ -73,7 +69,7 @@ export default function HomeView() {
       biggestExpense: biggest ? { amount: biggest.amount, label: biggest.name || biggestCategory?.name || "Gasto" } : null,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [monthExpense]);
+  }, [monthExpense, selectedMonth.year, selectedMonth.month]);
 
   useEffect(() => {
     if (location.state?.message) {
@@ -121,7 +117,7 @@ export default function HomeView() {
 
         <div className="md:hidden space-y-5">
           <CategoryBreakdownCard />
-          <BudgetCard spent={expectedRecurringExpense} />
+          <BudgetCard />
         </div>
 
         {/* Bento desktop: saldo destacado + ingresos/gastos apilados */}
@@ -147,7 +143,7 @@ export default function HomeView() {
         </div>
 
         <div className="hidden md:block">
-          <BudgetCard spent={expectedRecurringExpense} />
+          <BudgetCard tourId="budget-card-desktop" />
         </div>
 
         {/* Mini stats */}

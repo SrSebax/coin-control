@@ -376,7 +376,7 @@ export default function ConfigurationView() {
         {/* Footer */}
         <div className="text-center pt-4 pb-2">
           <p className="text-xs text-text-tertiary mb-3">Desarrollado por Sebastian Londoño</p>
-          <p className="text-xs text-text-tertiary mb-3">Un agradecimiento especial a Ana Naranjo</p>
+          <p className="text-xs text-text-tertiary mb-3">Diseñado por Ana Naranjo</p>
           <p className="text-xs text-text-tertiary mb-3">Versión {import.meta.env.VITE_APP_VERSION}</p>
           <div className="flex items-center justify-center gap-3">
             {SOCIAL_LINKS.map((social) => {
@@ -567,6 +567,22 @@ export default function ConfigurationView() {
               </button>
             </div>
 
+            {/* Ayuda */}
+            <button
+              type="button"
+              onClick={handleRestartTutorial}
+              className="cursor-pointer w-full flex items-center justify-between p-4 bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider hover:bg-hover transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <HelpCircle size={16} className="text-text-tertiary shrink-0" />
+                <div className="text-left">
+                  <p className="text-sm font-medium text-text">Ver tutorial de nuevo</p>
+                  <p className="text-xs text-text-tertiary">Repite el recorrido guiado de Inicio</p>
+                </div>
+              </div>
+              <ChevronRight size={16} className="text-text-muted shrink-0" />
+            </button>
+
             {/* App */}
             <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider overflow-hidden">
               {isInstalled ? (
@@ -620,7 +636,7 @@ export default function ConfigurationView() {
         {/* Footer */}
         <div className="text-center pt-2 pb-4">
           <p className="text-xs text-text-tertiary mb-1">Desarrollado por Sebastian Londoño</p>
-          <p className="text-xs text-text-tertiary mb-1">Un agradecimiento especial a Ana Naranjo</p>
+          <p className="text-xs text-text-tertiary mb-1">Diseñado por Ana Naranjo</p>
           <p className="text-xs text-text-tertiary mb-3">Versión {import.meta.env.VITE_APP_VERSION}</p>
           <div className="flex items-center justify-center gap-3">
             {SOCIAL_LINKS.map((social) => {

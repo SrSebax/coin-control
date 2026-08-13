@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const STORAGE_KEY = "cc_home_tutorial_seen_v1";
+const STORAGE_KEY = "cc_home_tutorial_seen_v2";
 
-// Los pasos apuntan a elementos que solo existen en el layout mobile
-// (`data-tour` vive en componentes `md:hidden`). En desktop esos nodos están
-// en el DOM pero con `display:none`, así que el tour nunca debe arrancar ahí.
-const isMobileViewport = () =>
+// Cada paso puede apuntar a un `data-tour` distinto según el layout: mobile y
+// desktop renderizan componentes distintos para el mismo concepto (FAB vs.
+// botones del hero, tabbar vs. sidebar, etc.) — ver tutorialSteps.js.
+export const isMobileViewport = () =>
   typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
 
 export function useHomeTutorial(steps) {
@@ -16,7 +16,7 @@ export function useHomeTutorial(steps) {
   const [stepIndex, setStepIndex] = useState(0);
 
   useEffect(() => {
-    if (location.pathname !== "/home" || !isMobileViewport()) return;
+    if (location.pathname !== "/home") return;
 
     if (location.state?.startTutorial) {
       setStepIndex(0);

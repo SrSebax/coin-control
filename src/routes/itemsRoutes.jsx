@@ -5,6 +5,7 @@ import {
   FolderKanban,
   PlusCircle,
   Edit,
+  PiggyBank,
 } from "lucide-react";
 
 export const itemsRoutes = [
@@ -18,6 +19,11 @@ export const itemsRoutes = [
     path: "/categories",
     label: "Categorías",
     icon: <FolderKanban size={20} />,
+  },
+  {
+    path: "/budget",
+    label: "Presupuesto",
+    icon: <PiggyBank size={20} />,
   },
   { path: "/settings", label: "Configuración", icon: <Settings size={20} /> },
 ];

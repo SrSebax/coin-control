@@ -377,7 +377,6 @@ export default function ConfigurationView() {
         <div className="text-center pt-4 pb-2">
           <p className="text-xs text-text-tertiary mb-3">Desarrollado por Sebastian Londoño</p>
           <p className="text-xs text-text-tertiary mb-3">Diseñado por Ana Naranjo</p>
-          <p className="text-xs text-text-tertiary mb-3">Versión {import.meta.env.VITE_APP_VERSION}</p>
           <div className="flex items-center justify-center gap-3">
             {SOCIAL_LINKS.map((social) => {
               const SocialIcon = social.icon;
@@ -637,7 +636,6 @@ export default function ConfigurationView() {
         <div className="text-center pt-2 pb-4">
           <p className="text-xs text-text-tertiary mb-1">Desarrollado por Sebastian Londoño</p>
           <p className="text-xs text-text-tertiary mb-1">Diseñado por Ana Naranjo</p>
-          <p className="text-xs text-text-tertiary mb-3">Versión {import.meta.env.VITE_APP_VERSION}</p>
           <div className="flex items-center justify-center gap-3">
             {SOCIAL_LINKS.map((social) => {
               const SocialIcon = social.icon;

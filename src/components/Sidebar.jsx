@@ -6,7 +6,6 @@ import {
   ChevronRight,
   ChevronsRight,
   Repeat,
-  PiggyBank,
 } from "lucide-react";
 import { itemsRoutes } from "../routes/itemsRoutes";
 import { useCurrentUser } from "../hooks/useCurrentUser";
@@ -33,10 +32,6 @@ const EXPANDABLE = {
     ],
   },
 };
-
-// Ítems que solo viven en el sidebar de escritorio (no van en el tabbar
-// mobile, por eso no están en itemsRoutes).
-const SIDEBAR_ONLY_ITEMS = [{ path: "/budget", label: "Presupuesto", icon: <PiggyBank size={20} /> }];
 
 const GROUPS = [
   { label: "Principal", paths: ["/home", "/new-entry", "/categories", "/budget"] },
@@ -100,7 +95,7 @@ export default function Sidebar({ collapsed }) {
         <div className="flex flex-col gap-4" data-tour="tab-bar-desktop">
         {GROUPS.map((group) => {
           const groupItems = group.paths
-            .map((path) => itemsRoutes.find((item) => item.path === path) || SIDEBAR_ONLY_ITEMS.find((item) => item.path === path))
+            .map((path) => itemsRoutes.find((item) => item.path === path))
             .filter(Boolean);
 
           if (groupItems.length === 0) return null;

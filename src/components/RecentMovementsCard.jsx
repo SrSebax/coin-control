@@ -28,6 +28,12 @@ const FILTERS = [
 
 const PAGE_SIZE = 5;
 
+// createdAt es un Timestamp de Firestore (existe desde que se agregó el
+// campo); los movimientos viejos no lo tienen, así que caen a `date`.
+function getSortKey(transaction) {
+  return transaction.createdAt?.toMillis?.() ?? parseLocalDate(transaction.date).getTime();
+}
+
 export default function RecentMovementsCard() {
   const [filter, setFilter] = useState("todos");
   const [page, setPage] = useState(0);
@@ -49,7 +55,7 @@ export default function RecentMovementsCard() {
 
   const filtered = transactions
     .filter((t) => !t.recurring && (filter === "todos" || t.type === filter))
-    .sort((a, b) => parseLocalDate(b.date) - parseLocalDate(a.date));
+    .sort((a, b) => getSortKey(b) - getSortKey(a));
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageItems = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);

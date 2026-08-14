@@ -8,6 +8,7 @@ import {
   getDocs,
   writeBatch,
   onSnapshot,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../services/firebase";
 import { useCurrentUser } from "./useCurrentUser";
@@ -69,7 +70,13 @@ function ensureSubscription(uid) {
 
   const ref = collection(db, "users", uid, "transactions");
   unsubscribeFn = onSnapshot(ref, (snapshot) => {
-    cachedTransactions = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    // serverTimestamps: "estimate" evita que createdAt aparezca como null
+    // en la escritura optimista local (antes de que el servidor confirme),
+    // que haría saltar el orden de la lista un instante después.
+    cachedTransactions = snapshot.docs.map((d) => ({
+      id: d.id,
+      ...d.data({ serverTimestamps: "estimate" }),
+    }));
     cachedLoading = false;
     emitChange();
   });
@@ -111,7 +118,7 @@ export function useTransactions() {
 
   // Agregar nueva transacción
   const addTransaction = async (transaction) => {
-    const payload = { date: new Date().toISOString(), ...transaction };
+    const payload = { date: new Date().toISOString(), ...transaction, createdAt: serverTimestamp() };
     const ref = collection(db, "users", user.uid, "transactions");
     const docRef = await addDoc(ref, payload);
     return { id: docRef.id, ...payload };
@@ -141,7 +148,7 @@ export function useTransactions() {
 
     additions.forEach((addition) => {
       const { id: _id, ...data } = addition;
-      batch.set(doc(transactionsRef), data);
+      batch.set(doc(transactionsRef), { ...data, createdAt: serverTimestamp() });
     });
 
     templateUpdates.forEach((template) => {

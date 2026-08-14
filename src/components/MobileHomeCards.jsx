@@ -32,6 +32,12 @@ function formatRelativeDay(dateString) {
   return date.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
 }
 
+// createdAt es un Timestamp de Firestore (existe desde que se agregó el
+// campo); los movimientos viejos no lo tienen, así que caen a `date`.
+function getCreatedAtMs(transaction) {
+  return transaction.createdAt?.toMillis?.() ?? parseLocalDate(transaction.date).getTime();
+}
+
 function groupByDay(transactions) {
   const groups = [];
   const byLabel = new Map();
@@ -107,8 +113,12 @@ export default function MobileHomeCards() {
     const d = parseLocalDate(t.date);
     return d.getFullYear() === selectedMonth.year && d.getMonth() === selectedMonth.month;
   });
-  // De más antiguo a más nuevo.
-  const sorted = [...currentMonth].sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date));
+  // De más antiguo a más nuevo; empates del mismo día se desempatan por
+  // orden de creación real (createdAt), no por orden arbitrario de Firestore.
+  const sorted = [...currentMonth].sort((a, b) => {
+    const dateDiff = parseLocalDate(a.date) - parseLocalDate(b.date);
+    return dateDiff !== 0 ? dateDiff : getCreatedAtMs(a) - getCreatedAtMs(b);
+  });
   const groups = groupByDay(sorted);
 
   return (

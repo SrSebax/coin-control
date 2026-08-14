@@ -137,7 +137,7 @@ export default function EditEntryView() {
     const transaction = {
       type: isExpense ? "expense" : "income",
       amount: parseFloat(formData.amount),
-      name: formData.name.trim(),
+      name: formData.name.trim() || selectedCategory?.name || "",
       category: formData.category,
       date: formData.date,
       note: formData.note.trim() || null,

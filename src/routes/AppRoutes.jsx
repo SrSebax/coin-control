@@ -17,13 +17,14 @@ import NewCategoryView from "../pages/categories/NewCategoryView";
 import EditCategoryView from "../pages/categories/EditCategoryView";
 import SelectCategoryView from "../pages/categories/SelectCategoryView";
 import ConfigurationView from "../pages/ConfigurationView";
+import RecurringDueModal from "../components/RecurringDueModal";
 import { useRecurrenceSync } from "../hooks/useRecurrenceSync";
 
 export default function AppRoutes() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
 
-  useRecurrenceSync(!!user);
+  const recurrenceSync = useRecurrenceSync(!!user);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -39,6 +40,8 @@ export default function AppRoutes() {
   if (loading) return null;
 
   return (
+    <>
+    {user && <RecurringDueModal {...recurrenceSync} />}
     <Routes>
       {/* Rutas protegidas */}
       <Route
@@ -101,5 +104,6 @@ export default function AppRoutes() {
       {/* Ruta 404 */}
       <Route path="*" element={<NotFoundView />} />
     </Routes>
+    </>
   );
 }

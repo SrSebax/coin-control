@@ -1,50 +1,116 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { useTransactions } from "./useTransactions";
 import { generateDueOccurrences } from "../utils/recurrence";
 
-// Genera las transacciones que las plantillas recurrentes deberían haber
-// creado hasta hoy. No hay backend ni cron: esto es el "ponerse al día" que
-// corre en el cliente. Reacciona a cada cambio de `transactions` (no solo al
-// cargar la app) para que una recurrente creada hoy mismo se materialice de
-// inmediato — es idempotente (una vez al día por plantilla, gracias a
-// `lastGeneratedDate`), así que no genera escrituras de más en los re-runs.
+const DECLINED_KEY = "coinControl_recurrenceDeclinedKeys";
+
+const listeners = new Set();
+function emitChange() {
+  listeners.forEach((listener) => listener());
+}
+function subscribe(listener) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function readDeclined() {
+  try {
+    const raw = localStorage.getItem(DECLINED_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch {
+    return new Set();
+  }
+}
+
+let declinedKeys = readDeclined();
+
+function declineKey(key) {
+  declinedKeys = new Set(declinedKeys).add(key);
+  localStorage.setItem(DECLINED_KEY, JSON.stringify(Array.from(declinedKeys)));
+  emitChange();
+}
+
+function getDeclinedSnapshot() {
+  return declinedKeys;
+}
+
+const occurrenceKey = (templateId, date) => `${templateId}|${date}`;
+
+// Motor de recurrencias: detecta ocurrencias vencidas de cada plantilla
+// (`recurring: true`) y las deja pendientes de decisión del usuario en vez
+// de agregarlas solas — `RecurringDueModal` es quien las acepta o rechaza.
+// Una vez decidida una ocurrencia (aceptada -> ya existe como transacción
+// real con `generatedFrom`; rechazada -> queda en `declinedKeys`), el
+// prefijo contiguo de ocurrencias resueltas avanza `lastGeneratedDate` de
+// la plantilla, así no se recalculan en cada sync. Ocurrencias pendientes
+// más allá del primer hueco sin decidir se siguen mostrando (no se pierden).
 export function useRecurrenceSync(enabled) {
-  const { transactions, applyRecurrenceUpdates } = useTransactions();
+  const declined = useSyncExternalStore(subscribe, getDeclinedSnapshot);
+  const { transactions, addTransaction, applyRecurrenceUpdates } = useTransactions();
 
-  useEffect(() => {
-    if (!enabled) return;
+  const templates = useMemo(
+    () => transactions.filter((t) => t.recurring && t.recurrence),
+    [transactions]
+  );
 
-    const updatedTemplates = new Map();
-    const additions = [];
+  const { pending, resolvedTemplateUpdates } = useMemo(() => {
+    const pendingList = [];
+    const templateUpdates = [];
 
-    transactions.forEach((t) => {
-      if (!t.recurring || !t.recurrence) return;
-
-      const { occurrences, lastDate } = generateDueOccurrences(t);
+    templates.forEach((t) => {
+      const { occurrences } = generateDueOccurrences(t);
       if (occurrences.length === 0) return;
 
-      occurrences.forEach((date, idx) => {
-        additions.push({
-          id: `${t.id}-rec-${Date.now()}-${idx}`,
-          type: t.type,
-          amount: t.amount,
-          name: t.name,
-          category: t.category,
-          date,
-          note: t.note,
-          recurring: false,
-          generatedFrom: t.id,
-        });
+      let resolvedUntil = null;
+      let sawUnresolved = false;
+
+      occurrences.forEach((date) => {
+        const key = occurrenceKey(t.id, date);
+        const alreadyGenerated = transactions.some((tx) => tx.generatedFrom === t.id && tx.date === date);
+        const isDeclined = declined.has(key);
+
+        if (alreadyGenerated || isDeclined) {
+          if (!sawUnresolved) resolvedUntil = date;
+          return;
+        }
+
+        sawUnresolved = true;
+        pendingList.push({ key, template: t, date });
       });
 
-      updatedTemplates.set(t.id, { ...t, recurrence: { ...t.recurrence, lastGeneratedDate: lastDate } });
+      if (resolvedUntil && resolvedUntil !== t.recurrence.lastGeneratedDate) {
+        templateUpdates.push({
+          ...t,
+          recurrence: { ...t.recurrence, lastGeneratedDate: resolvedUntil },
+        });
+      }
     });
 
-    if (additions.length === 0) return;
+    return { pending: pendingList, resolvedTemplateUpdates: templateUpdates };
+  }, [templates, transactions, declined]);
 
-    applyRecurrenceUpdates({ additions, templateUpdates: Array.from(updatedTemplates.values()) });
-    // `applyRecurrenceUpdates` es una nueva referencia en cada render de
-    // useTransactions; solo debe reaccionar a cambios reales de `transactions`.
+  useEffect(() => {
+    if (!enabled || resolvedTemplateUpdates.length === 0) return;
+    applyRecurrenceUpdates({ templateUpdates: resolvedTemplateUpdates });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, transactions]);
+  }, [enabled, resolvedTemplateUpdates]);
+
+  const acceptOccurrence = ({ template, date }) =>
+    addTransaction({
+      type: template.type,
+      amount: template.amount,
+      name: template.name,
+      category: template.category,
+      date,
+      note: template.note,
+      recurring: false,
+      generatedFrom: template.id,
+    });
+
+  const declineOccurrence = (occurrence) => declineKey(occurrence.key);
+
+  const acceptAll = (occurrences) => Promise.all(occurrences.map(acceptOccurrence));
+  const declineAll = (occurrences) => occurrences.forEach(declineOccurrence);
+
+  return { pending: enabled ? pending : [], acceptOccurrence, declineOccurrence, acceptAll, declineAll };
 }

@@ -113,11 +113,11 @@ export default function MobileHomeCards() {
     const d = parseLocalDate(t.date);
     return d.getFullYear() === selectedMonth.year && d.getMonth() === selectedMonth.month;
   });
-  // De más antiguo a más nuevo; empates del mismo día se desempatan por
+  // De más nuevo a más antiguo; empates del mismo día se desempatan por
   // orden de creación real (createdAt), no por orden arbitrario de Firestore.
   const sorted = [...currentMonth].sort((a, b) => {
-    const dateDiff = parseLocalDate(a.date) - parseLocalDate(b.date);
-    return dateDiff !== 0 ? dateDiff : getCreatedAtMs(a) - getCreatedAtMs(b);
+    const dateDiff = parseLocalDate(b.date) - parseLocalDate(a.date);
+    return dateDiff !== 0 ? dateDiff : getCreatedAtMs(b) - getCreatedAtMs(a);
   });
   const groups = groupByDay(sorted);
 

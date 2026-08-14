@@ -17,6 +17,7 @@ import NewCategoryView from "../pages/categories/NewCategoryView";
 import EditCategoryView from "../pages/categories/EditCategoryView";
 import SelectCategoryView from "../pages/categories/SelectCategoryView";
 import ConfigurationView from "../pages/ConfigurationView";
+import PocketsView from "../pages/PocketsView";
 import RecurringDueModal from "../components/RecurringDueModal";
 import { useRecurrenceSync } from "../hooks/useRecurrenceSync";
 
@@ -87,6 +88,10 @@ export default function AppRoutes() {
       <Route
         path="/budget"
         element={user ? <BudgetDetailView /> : <Navigate to="/" replace />}
+      />
+      <Route
+        path="/pockets"
+        element={user ? <PocketsView /> : <Navigate to="/" replace />}
       />
 
       {/* Ruta de Configuración */}

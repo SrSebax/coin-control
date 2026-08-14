@@ -34,7 +34,7 @@ const EXPANDABLE = {
 };
 
 const GROUPS = [
-  { label: "Principal", paths: ["/home", "/new-entry", "/categories", "/budget"] },
+  { label: "Principal", paths: ["/home", "/new-entry", "/categories", "/pockets", "/budget"] },
   { label: "Gestión", paths: ["/settings"] },
 ];
 

@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { TrendingUp, TrendingDown, ChevronRight, Eye, EyeOff, EyeClosed } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronRight, Eye, EyeOff, EyeClosed, Wallet } from "lucide-react";
 import { useTransactions } from "../hooks/useTransactions";
+import { usePockets } from "../hooks/usePockets";
 import { useCategories } from "../hooks/useCategories";
 import { useMonthlyStats } from "../hooks/useMonthlyStats";
 import { useBudget, resolveActiveBudgetAmount } from "../hooks/useBudget";
@@ -60,6 +61,7 @@ function groupByDay(transactions) {
 export default function MobileHomeCards() {
   const navigate = useNavigate();
   const { transactions, summary, deleteTransaction } = useTransactions();
+  const { totalInPockets } = usePockets();
   const { getCategoriesByType } = useCategories();
   const selectedMonth = useSelectedMonth();
   const { monthIncome, monthExpense } = useMonthlyStats(selectedMonth.date);
@@ -88,7 +90,13 @@ export default function MobileHomeCards() {
   const cardMask = (value, sign = "") => (cardHidden ? "••••••" : `${sign}${formatCurrency(value)}`);
   const mask = (value, sign = "") => (allHidden ? "••••••" : `${sign}${formatCurrency(value)}`);
 
-  const saldo = summary.ingresos - summary.gastos;
+  // "total" = saldo completo (ingresos - gastos). "libre" = lo que queda
+  // afuera de los bolsillos, que son solo un apartado interno del mismo
+  // saldo (no ingreso ni gasto real).
+  const [saldoViewMode, setSaldoViewMode] = useState("total");
+  const saldoTotal = summary.ingresos - summary.gastos;
+  const saldoLibre = saldoTotal - totalInPockets;
+  const saldo = saldoViewMode === "total" ? saldoTotal : saldoLibre;
   const budgetAmount = resolveActiveBudgetAmount(budget, budgetReferenceDate);
   const hasBudget = budgetAmount !== null && budgetAmount !== undefined;
   const expectedRecurringExpense = useMemo(
@@ -137,7 +145,9 @@ export default function MobileHomeCards() {
 
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-white/70 text-sm font-medium">Saldo disponible</p>
+            <p className="text-white/70 text-sm font-medium">
+              {saldoViewMode === "total" ? "Saldo disponible" : "Saldo fuera de bolsillos"}
+            </p>
             <button
               onClick={cycle}
               aria-label={VISIBILITY_LABEL[level]}
@@ -146,7 +156,37 @@ export default function MobileHomeCards() {
               <VisibilityIcon size={16} />
             </button>
           </div>
-          <p className="text-4xl font-extrabold tracking-tight mb-5">{cardMask(saldo)}</p>
+          <p className="text-4xl font-extrabold tracking-tight mb-3">{cardMask(saldo)}</p>
+
+          {totalInPockets > 0 && (
+            <div className="flex items-center gap-2 mb-5 text-xs flex-wrap">
+              <div className="inline-flex rounded-full bg-white/10 p-0.5">
+                <button
+                  onClick={() => setSaldoViewMode("total")}
+                  className={`cursor-pointer px-2.5 py-1 rounded-full font-semibold transition-colors ${
+                    saldoViewMode === "total" ? "bg-white/20 text-white" : "text-white/50 hover:text-white"
+                  }`}
+                >
+                  Total
+                </button>
+                <button
+                  onClick={() => setSaldoViewMode("libre")}
+                  className={`cursor-pointer px-2.5 py-1 rounded-full font-semibold transition-colors ${
+                    saldoViewMode === "libre" ? "bg-white/20 text-white" : "text-white/50 hover:text-white"
+                  }`}
+                >
+                  Fuera de bolsillos
+                </button>
+              </div>
+              <Link
+                to="/pockets"
+                className="inline-flex items-center gap-1 text-white/60 hover:text-white transition-colors"
+              >
+                <Wallet size={13} />
+                {cardHidden ? "••••••" : formatCurrency(totalInPockets)} en bolsillos
+              </Link>
+            </div>
+          )}
 
           {hasBudget && (
             <>

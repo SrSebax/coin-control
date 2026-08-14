@@ -11,11 +11,14 @@ const ADD_ENTRY_PATH = "/new-entry";
 // Prefijos de rutas con su propio footer fijo (botón de guardar/actualizar
 // pegado abajo) — ahí el tabbar tiene que ocultarse para no taparlo.
 const FIXED_FOOTER_PATH_PREFIXES = [ADD_ENTRY_PATH, "/edit-entry", "/new-category", "/edit-category"];
+// Slots fijos del tabbar mobile (4, además del FAB de "/new-entry"):
+// Categorías se movió a Configuración para no saturar la barra.
+const TAB_PATHS = ["/home", "/budget", "/pockets", "/settings"];
 
 export default function MobileTabBar() {
   const { pathname } = useLocation();
   const [sheetOpen, setSheetOpen] = useState(false);
-  const tabItems = itemsRoutes.filter(({ path }) => path !== ADD_ENTRY_PATH);
+  const tabItems = TAB_PATHS.map((path) => itemsRoutes.find((item) => item.path === path)).filter(Boolean);
   const tutorial = useHomeTutorial(homeTutorialSteps);
 
   return (

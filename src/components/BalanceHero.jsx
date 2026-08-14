@@ -1,12 +1,15 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
   Eye,
   EyeOff,
   EyeClosed,
+  Wallet,
 } from "lucide-react";
 import { useTransactions } from "../hooks/useTransactions";
+import { usePockets } from "../hooks/usePockets";
 import { useMoneyVisibility } from "../hooks/useHiddenBalances";
 import { parseLocalDate } from "../utils/date";
 import walletImage from "../assets/wallet_transparent.png";
@@ -32,11 +35,18 @@ function percentChange(current, previous) {
 export default function BalanceHero() {
   const navigate = useNavigate();
   const { transactions, summary } = useTransactions();
+  const { totalInPockets } = usePockets();
   const { level, cycle, cardHidden } = useMoneyVisibility();
   const hideBalance = cardHidden;
   const VisibilityIcon = VISIBILITY_ICON[level];
 
-  const saldo = summary.ingresos - summary.gastos;
+  // "total" = saldo completo (ingresos - gastos). "libre" = lo que queda
+  // afuera de los bolsillos, que son solo un apartado interno del mismo
+  // saldo (no ingreso ni gasto real).
+  const [viewMode, setViewMode] = useState("total");
+  const saldoTotal = summary.ingresos - summary.gastos;
+  const saldoLibre = saldoTotal - totalInPockets;
+  const saldo = viewMode === "total" ? saldoTotal : saldoLibre;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -87,7 +97,9 @@ export default function BalanceHero() {
 
       <div className="relative z-10">
         <div className="flex items-center gap-2">
-          <p className="text-white/70 text-sm font-medium">Saldo disponible</p>
+          <p className="text-white/70 text-sm font-medium">
+            {viewMode === "total" ? "Saldo disponible" : "Saldo fuera de bolsillos"}
+          </p>
           <button
             onClick={cycle}
             className="cursor-pointer text-white/50 hover:text-white transition-colors"
@@ -112,6 +124,36 @@ export default function BalanceHero() {
             vs ayer
           </span>
         </div>
+
+        {totalInPockets > 0 && (
+          <div className="flex items-center gap-2 mt-3 text-xs">
+            <div className="inline-flex rounded-full bg-white/10 p-0.5">
+              <button
+                onClick={() => setViewMode("total")}
+                className={`cursor-pointer px-2.5 py-1 rounded-full font-semibold transition-colors ${
+                  viewMode === "total" ? "bg-white/20 text-white" : "text-white/50 hover:text-white"
+                }`}
+              >
+                Total
+              </button>
+              <button
+                onClick={() => setViewMode("libre")}
+                className={`cursor-pointer px-2.5 py-1 rounded-full font-semibold transition-colors ${
+                  viewMode === "libre" ? "bg-white/20 text-white" : "text-white/50 hover:text-white"
+                }`}
+              >
+                Fuera de bolsillos
+              </button>
+            </div>
+            <Link
+              to="/pockets"
+              className="inline-flex items-center gap-1 text-white/60 hover:text-white transition-colors"
+            >
+              <Wallet size={13} />
+              {hideBalance ? "••••••" : formatCurrency(totalInPockets)} en bolsillos
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="relative z-10 flex gap-2 mt-5" data-tour="add-desktop">

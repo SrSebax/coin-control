@@ -28,7 +28,7 @@ export default function IconColorPickerSheet({ open, onClose, icon, color, onApp
       <div className="absolute inset-0" onClick={onClose} />
 
       <div
-        className="relative w-full self-end rounded-t-3xl bg-surface border-t border-divider shadow-2xl pt-5 px-5 pb-8 max-h-[75vh] flex flex-col animate-slide-up"
+        className="relative w-full self-end rounded-t-3xl border-t md:self-auto md:max-w-sm md:mx-auto md:rounded-2xl md:border bg-surface border-divider shadow-2xl pt-5 px-5 pb-8 max-h-[75vh] flex flex-col animate-slide-up md:animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="w-10 h-1.5 rounded-full bg-divider mx-auto mb-4 shrink-0" />

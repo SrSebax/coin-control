@@ -19,6 +19,7 @@ import {
   Share,
   Repeat,
   HelpCircle,
+  FolderKanban,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
@@ -264,6 +265,21 @@ export default function ConfigurationView() {
 
         {/* Datos */}
         <div className="bg-surface rounded-2xl border border-divider divide-y divide-divider overflow-hidden">
+          <button
+            type="button"
+            onClick={() => navigate("/categories")}
+            className="cursor-pointer w-full flex items-center justify-between p-4 hover:bg-hover transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <FolderKanban size={16} className="text-text-tertiary shrink-0" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-text">Categorías</p>
+                <p className="text-xs text-text-tertiary">Administra tus categorías de ingresos y gastos</p>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-text-muted shrink-0" />
+          </button>
+
           <button
             type="button"
             onClick={() => navigate("/recurring-movements")}
@@ -545,6 +561,21 @@ export default function ConfigurationView() {
           <div className="space-y-6">
             {/* Datos */}
             <div className="bg-surface/90 backdrop-blur-sm rounded-2xl shadow-md border border-divider divide-y divide-divider overflow-hidden">
+              <button
+                type="button"
+                onClick={() => navigate("/categories")}
+                className="cursor-pointer w-full flex items-center justify-between p-4 hover:bg-hover transition-colors"
+              >
+                <div className="flex items-center gap-2.5">
+                  <FolderKanban size={16} className="text-text-tertiary shrink-0" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-text">Categorías</p>
+                    <p className="text-xs text-text-tertiary">Administra tus categorías de ingresos y gastos</p>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="text-text-muted shrink-0" />
+              </button>
+
               <button
                 type="button"
                 onClick={() => navigate("/recurring-movements")}
